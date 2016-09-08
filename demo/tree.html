@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../vaadin-grid.html">
+  <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+
+  <style is="custom-style">
+    body {
+      margin: 0;
+      padding-top: 100px;
+    }
+  </style>
+</head>
+
+<body unresolved>
+  <dom-module id="x-app">
+    <template>
+      <style>
+        #component {
+          height: 500px;
+          width: 80%;
+        }
+
+        i.elItem {
+          height: 30px;
+          white-space: nowrap;
+        }
+      </style>
+      <vaadin-grid id="component" data-source="[[dataSource]]" size="1000">
+        <vaadin-grid-column width="100px">
+          <template>
+            <span class="elItem">[[index]] [[item.name]]</span>
+          </template>
+          <template is="header">
+            <b class="elItem">foo-h1</b>
+          </template>
+        </vaadin-grid-column>
+
+        <vaadin-grid-column>
+          <template>
+            <!-- <paper-input value="{{item.name}}"></paper-input> -->
+            <paper-button raised on-tap="_expand">Expand [[item.name]]</paper-button>
+          </template>
+          <template is="header">
+            bar-h1
+          </template>
+        </vaadin-grid-column>
+
+      </vaadin-grid>
+    </template>
+    <script>
+      document.addEventListener('WebComponentsReady', function () {
+        Polymer({
+          is: 'x-app',
+
+          properties: {
+            expanded: {
+              value: function() {
+                return {};
+              }
+            },
+
+            dataSource: {
+              value: function() {
+                return function(params, callback) {
+                  console.log('requesting page ' + params.page, params.path);
+                  setTimeout(function() {
+                    var result = [];
+                    params.pageSize = params.path === '/' ? params.pageSize : 10;
+                    var firstIndex = params.page * params.pageSize;
+                    for (var i = 0; result.length < params.pageSize; i++) {
+                      result.push({
+                        name: params.path +'name-' + (firstIndex + i)
+                      });
+                    }
+                    callback(result);
+                  }.bind(this), 1000);
+                }.bind(this);
+              }
+            }
+          },
+
+          _expand: function(e) {
+            var index = e.model.index;
+            if (this.expanded[index]) {
+              console.log('collapsing: ' + index);
+              delete this.expanded[index];
+              this.$.component.tree.remove('foo' + index + '/', index + 1);
+              this.$.component.clearCache();
+            } else {
+              console.log('expanding: ' + index);
+              this.expanded[index] = true;
+              this.$.component.tree.add('foo' + index + '/', index + 1, 10);
+              this.$.component.clearCache();
+            }
+          },
+
+          _itemChanged: function(e) {
+            console.log(e.detail);
+          }
+        });
+      });
+    </script>
+  </dom-module>
+
+  <x-app></x-app>
+</body>
+
+</html>

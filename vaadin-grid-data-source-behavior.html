@@ -94,7 +94,7 @@
 
       _pendingRequests: {
         value: function() {
-          return {};
+          return [];
         }
       },
     },
@@ -103,13 +103,19 @@
       'clearCache(pageSize)'
     ],
 
-    _getCachedItem: function(index) {
-      var page = this._getPageForIndex(index);
+    created: function() {
+      this.tree = new TreeMap();
+      this.tree.add('/', 0, 10000);
+    },
 
-      var p = this._cache[page];
+    _getCachedItem: function(index) {
+      // var node = this.tree.getNode(index);
+      var page = this._getPageForIndex(index);
+      var p = page.cache;
 
       if (p) {
-        return p[index - page * this.pageSize];
+        return p[this.tree.getNormalizedIndex(index, page, this.pageSize)];
+        // return p[index - page.start];
       } else {
         return null;
       }
@@ -117,7 +123,7 @@
 
     _getItem: function(index, el) {
       this._updateItem(el, this._getCachedItem(index));
-      this._eagerlyLoadPages();
+      // this._eagerlyLoadPages();
       //
       var uncachedPages = this._uncachedPagesForPhysicalItems();
       if (uncachedPages.length > 0) {
@@ -133,13 +139,13 @@
 
     _cachedPagesForPhysicalItems: function() {
       return this._pagesForPhysicalItems().filter(function(page) {
-        return this._cache !== undefined && this._cache[page] !== undefined;
+        return page.cache !== undefined;
       }.bind(this));
     },
 
     _uncachedPagesForPhysicalItems: function() {
       return this._pagesForPhysicalItems().filter(function(page) {
-        return this._cache === undefined || this._cache[page] === undefined;
+        return page.cache === undefined;
       }.bind(this));
     },
 
@@ -148,11 +154,11 @@
 
       if (pages.length > 0) {
         pages.sort(function(a, b) {
-          return a > b;
+          return a.page > b.page;
         });
 
-        var prev = Math.max(0, pages[0] - 1);
-        var next = Math.min(pages[pages.length - 1] + 1, Math.floor(this.size / this.pageSize) - 1);
+        var prev = {page: Math.max(0, pages[0].page - 1), path: pages[0].path};
+        var next = {page: Math.min(pages[pages.length - 1].page + 1, Math.floor(this.size / this.pageSize) - 1), path: pages[0].path};
 
         this._loadPage(prev);
         this._loadPage(next);
@@ -180,42 +186,72 @@
     },
 
     _updateItems: function(page, items) {
-      for(var i=0;i<this.pageSize;i++) {
-        var index = page*this.pageSize + i;
-        var row = this.$.scroller._virtualIndexToItem[index];
-        if (row) {
-          this._updateItem(row, items[i]);
+      // var start = this.tree.getStartIndex(page, this.pageSize);
+      page.nodes.forEach(function(node) {
+        for(var i=node.start;i<=node.end;i++) {
 
-          // update heights if any of the items change.
-          // TODO: in a way these should be obsolete, since _update() is called
-          // on scrollHandler every time tiles are recycled. And the function we
-          // are currently in is called as a result from calling assignModels when
-          // tiles are being recycled. I really should draw a diagram of all this.
-          if (!this.$.scroller.hasAttribute('has-data')) {
-            // First set of actual data set to rows, have average height re-measured
-            this.$.scroller._resetAverage();
-            this.$.scroller.toggleAttribute('has-data', true);
+          var row = this.$.scroller._virtualIndexToItem[i];
+          if (row) {
+            var index = this.tree.getNormalizedIndex(i, page, this.pageSize);
+            this._updateItem(row, items[index]);
+
+            // update heights if any of the items change.
+            // TODO: in a way these should be obsolete, since _update() is called
+            // on scrollHandler every time tiles are recycled. And the function we
+            // are currently in is called as a result from calling assignModels when
+            // tiles are being recycled. I really should draw a diagram of all this.
+            if (!this.$.scroller.hasAttribute('has-data')) {
+              // First set of actual data set to rows, have average height re-measured
+              this.$.scroller._resetAverage();
+              this.$.scroller.toggleAttribute('has-data', true);
+            }
+
+            this.debounce('update-heights', function() {
+              this.$.scroller._updateMetrics();
+              this.$.scroller._positionItems();
+              this.$.scroller._updateScrollerSize();
+            }, 1);
           }
-
-          this.debounce('update-heights', function() {
-            this.$.scroller._updateMetrics();
-            this.$.scroller._positionItems();
-            this.$.scroller._updateScrollerSize();
-          }, 1);
         }
-      }
+      }.bind(this));
+      //
+      // for(var i=0;i<items.length;i++) {
+      //   var index = start + i;
+      //   var row = this.$.scroller._virtualIndexToItem[index];
+      //   if (row) {
+      //     this._updateItem(row, items[i]);
+      //
+      //     // update heights if any of the items change.
+      //     // TODO: in a way these should be obsolete, since _update() is called
+      //     // on scrollHandler every time tiles are recycled. And the function we
+      //     // are currently in is called as a result from calling assignModels when
+      //     // tiles are being recycled. I really should draw a diagram of all this.
+      //     if (!this.$.scroller.hasAttribute('has-data')) {
+      //       // First set of actual data set to rows, have average height re-measured
+      //       this.$.scroller._resetAverage();
+      //       this.$.scroller.toggleAttribute('has-data', true);
+      //     }
+      //
+      //     this.debounce('update-heights', function() {
+      //       this.$.scroller._updateMetrics();
+      //       this.$.scroller._positionItems();
+      //       this.$.scroller._updateScrollerSize();
+      //     }, 1);
+      //   }
+      // }
     },
 
     _loadPage: function(page) {
-      if (this._cache[page]) {
+      if (page.cache) {
       } else {
         // make sure same page isn't requested multiple times.
-        if (!this._pendingRequests[page] && this.dataSource) {
-          this._pendingRequests[page] = true;
-          var opts = {page: page, pageSize: this.pageSize};
-          this.dataSource(opts, function(items) {
-            this._cache[page] = items;
-            delete this._pendingRequests[page];
+        var index = this._pendingRequests.indexOf(page);
+        if (index === -1 && this.dataSource) {
+          this._pendingRequests.push(page);
+          var params = {page: page.page, pageSize: this.pageSize, path: page.path};
+          this.dataSource(params, function(items) {
+            page.cache = items;
+            this._pendingRequests.splice(index, 1);
             this._updateItems(page, items);
 
             this.loading = this._pendingRequests.length > 0;
@@ -225,15 +261,16 @@
     },
 
     _getPageForIndex: function(index) {
-      return Math.floor(index / this.pageSize);
+      return this.tree.getPage(index, this.pageSize);
+      // return Math.floor(index / this.pageSize);
     },
 
     /**
      * Clears the cached pages and reloads data from datasource when needed.
      */
     clearCache: function() {
-      this._cache = {};
-      this._pendingRequests = {};
+      this.tree.clearCache();
+      this._pendingRequests = [];
       this.$.scroller._update();
       this._flushItemsDebouncer();
     },

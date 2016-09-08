@@ -1,0 +1,219 @@
+<script>
+  (function() {
+    window.TreeMap = function() {
+      var nodes = [];
+
+      var _findFirst = function(index) {
+        var items = nodes.filter(function(n) {
+          return n.start <= index && n.end >= index;
+        });
+
+        return (items && items.length > 0) ? items[0] : null;
+      };
+
+      var _nodesForIndex = function(index, pageSize) {
+        var first = _findFirst(index);
+        var nodes = _findPath(first.path);
+
+        return nodes.filter(function(node) {
+          var result = pageSize >= 0;
+          pageSize -= (node.end - node.start);
+
+          return result;
+        });
+      };
+
+      var _findPath = function(path) {
+        return nodes.filter(function(n) {
+          return n.path === path;
+        });
+      };
+
+      var _updateIndexes = function() {
+        var start = 0;
+
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+
+          var length = node.end - node.start;
+          node.start = start;
+          node.end = start + length;
+
+          start += length + 1;
+        }
+      };
+
+      var _combineSiblings = function() {
+        for (var i = 0; i < nodes.length; i++) {
+          if (i + 1 < nodes.length) {
+            var node = nodes[i];
+            var nextNode = nodes[i + 1];
+
+            if (node.path === nextNode.path) {
+              node.end = nextNode.end;
+              nodes.splice(i + 1, 1);
+
+              _combineSiblings();
+              return;
+            }
+          }
+        }
+      };
+
+      return {
+        add: function(path, index, count) {
+          if (_findPath(path).length > 0) {
+            throw Error(path + ' already added.');
+          }
+
+          var newNode = {
+            path: path,
+            start: index,
+            end: index + count - 1,
+            count: count
+          };
+
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+
+            if (node.start <= index && node.end >= index) {
+              var splittedStart = {
+                path: node.path,
+                start: node.start,
+                end: index - 1,
+                count: node.count
+              };
+              var splittedEnd = {
+                path: node.path,
+                start: index + count,
+                end: index + count + (node.end - node.start) - (splittedStart.end - splittedStart.start) - 1,
+                count: node.count
+              };
+              nodes.splice(i, 1, splittedStart, newNode, splittedEnd);
+
+              _updateIndexes();
+              return;
+            }
+          }
+          nodes.push(newNode);
+        },
+
+        remove: function(path) {
+          var indexes = _findPath(path).map(function(p) {
+            return nodes.indexOf(p);
+          });
+
+          var first = indexes[0];
+          var last = indexes[indexes.length - 1];
+
+          nodes.splice(first, last - first + 1);
+
+          _updateIndexes();
+          _combineSiblings();
+        },
+
+        getNormalizedIndex: function(index, page, pageSize) {
+          var offset = - page.page * pageSize;
+          for(var i=0;i<page.nodes.length;i++) {
+            var node = page.nodes[i];
+            var count = node.end - node.start;
+
+            if(index <= node.end) {
+              return index - node.start + offset;
+            } else {
+              offset += (node.end - node.start) + 1;
+            }
+          }
+        },
+
+        getStartIndex: function(page, pageSize) {
+          var index = page.page * pageSize;
+          var nodes = _findPath(page.path);
+
+          for(var i=0;nodes.length-1;i++) {
+            var node = nodes[i];
+            if (index <= node.end) {
+              return Math.abs(index - node.start);
+            }
+
+            index -= node.count;
+          }
+
+          return Math.abs(index - nodes[nodes.length - 1].start);
+
+          // return _findPath(page.path)[page.page].start;
+        },
+
+        getPath: function(index) {
+          var first = _findFirst(index);
+
+          return first ? first.path : undefined;
+        },
+
+        _cache: {},
+
+        clearCache: function() {
+          this._cache = {};
+        },
+
+        getNode: function(index) {
+          return _findFirst(index);
+        },
+
+        getPage: function(index, pageSize) {
+          var first = _findFirst(index);
+
+          if (first) {
+            var pageIndex = index - first.start;
+            var page = Math.floor(pageIndex / pageSize);
+            var nodes = _nodesForIndex(index, pageSize);
+
+            if (!this._cache[first.path] || this._cache[first.path][page] === undefined) {
+              this._cache[first.path] = this._cache[first.path] || [];
+              this._cache[first.path][page] = {path: first.path, page: page, nodes: nodes};
+            }
+
+            return this._cache[first.path][page];
+
+            // return {
+            //   path: first.path,
+            //   page: Math.floor(pageIndex / pageSize)
+            // };
+          }
+        },
+
+        getPages: function(start, end, pageSize) {
+          var pages = [];
+
+          if (start <= end) {
+            for (var i = start; i <= end; i++) {
+              var page = this.getPage(i, pageSize);
+
+              if (pages.filter(function(p) {
+                  return p.path === page.path && p.page === page.page;
+                }).length === 0) {
+                pages.push(page);
+              }
+            }
+          } else {
+            for (var i = start; i >= end; i--) {
+              var page = this.getPage(i, pageSize);
+
+              if (pages.filter(function(p) {
+                  return p.path === page.path && p.page === page.page;
+                }).length === 0) {
+                pages.push(page);
+              }
+            }
+          }
+
+          return pages;
+        },
+
+        //public to help debugging
+        _nodes: nodes,
+        _nodesForIndex: _nodesForIndex
+      };
+    };
+  })();
+</script>
