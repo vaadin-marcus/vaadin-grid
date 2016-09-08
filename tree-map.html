@@ -1,4 +1,126 @@
 <script>
+  window.vaadin = window.vaadin || {};
+  vaadin.elements = vaadin.elements || {};
+  vaadin.elements.grid = vaadin.elements.grid || {};
+
+  vaadin.elements.grid.HierarchyBehavior = {
+
+    observers: [
+      '_columnsChangedHierarchy(columns)'
+    ],
+
+    properties: {
+      _hierarchyColumn: {
+        value: function() {
+          return document.createElement('vaadin-grid-hierarchy-column');
+        }
+      }
+    },
+
+    _columnsChangedHierarchy: function() {
+      if (this.columns.indexOf(this._hierarchyColumn.$.column) === -1) {
+        this.unshift('columns', this._hierarchyColumn.$.column);
+      }
+    }
+
+  };
+</script>
+
+<dom-module id="vaadin-grid-hierarchy-column">
+  <template>
+    <style>
+      .hierarchy-button {
+        border: 7px solid transparent;
+        border-left-width: 12px;
+        border-left-color: #000;
+        cursor: pointer;
+        display: inline-block;
+        vertical-align: middle;
+        transition: transform 0.2s;
+        transform-origin: 25%;
+      }
+
+      .hierarchy-button[opened] {
+        transform: rotateZ(90deg);
+      }
+    </style>
+    <vaadin-grid-column id="column" width="[[_getColumnWidth()]]px" flex="0">
+      <template>
+        <div>
+          <span on-click="_toggleOpened" index="[[index]]" class="hierarchy-button" style="margin-left: [[_getPadding(index, _foo)]]px" opened$="[[_isHierarchyExpanded(index, _foo)]]"></span>
+          <span>[[index]]</span>
+        </div>
+      </template>
+    </vaadin-grid-column>
+  </template>
+  <script>
+    Polymer({
+      is: 'vaadin-grid-hierarchy-column',
+
+      observer: ['_hierarchyExpandedChanged(_hierarchyExpanded.splices)'],
+
+      properties: {
+        _hierarchyExpanded: {
+          value: []
+        },
+
+        // TODO: Replace with actual itemproperty
+        _foo: {
+          value: 0
+        }
+      },
+
+      _getColumnWidth: function() {
+        return this._getMaxHierarchyLevel() * 10 + 100;
+      },
+
+      _getPadding: function(index) {
+        return this._getItemHierarchyLevel(index) * 10;
+      },
+
+      // TODO: Base API's on items?
+      // TODO: Implement
+      _getItemHierarchyLevel: function(index) {
+        var level = 0;
+        for (var i = 1; i < 6; i++) {
+          if (this._isHierarchyExpanded(index - i)) {
+            level++;
+          }
+        }
+        return level;
+      },
+
+      // TODO: Implement
+      _getMaxHierarchyLevel: function() {
+        return 4;
+      },
+
+      // TODO: Implement
+      _isHierarchyExpanded: function(index) {
+        return this._hierarchyExpanded.indexOf(index) !== -1;
+      },
+
+      _hierarchyExpandedChanged: function(e) {
+
+      },
+
+      _toggleOpened: function (e) {
+        var grid = this.$.column.grid;
+        if (this._isHierarchyExpanded(e.model.index)){
+          this.splice('_hierarchyExpanded', this._hierarchyExpanded.indexOf(e.model.index), 1);
+          grid.tree.remove(e.model.item.name + e.model.index);
+        } else {
+          grid.tree.add(e.model.item.name + e.model.index, e.model.index + 1, 5);
+          this.push('_hierarchyExpanded', e.model.index);
+        }
+        grid.clearCache();
+        this._foo++;
+      }
+
+    });
+  </script>
+</dom-module>
+<script>
   (function() {
     window.TreeMap = function() {
       var nodes = [];

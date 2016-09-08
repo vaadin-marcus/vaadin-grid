@@ -1,0 +1,84 @@
+<!doctype html>
+
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="helpers.html">
+  <link rel="import" href="../vaadin-grid.html">
+</head>
+
+<body>
+
+  <script>
+    var Tree = function(size, pageSize) {
+      this.start = 0;
+      this.size = 100;
+      this.pageSize = 50;
+      this.trees = [];
+
+      this.cache = {};
+      this.getItem = function(index) {
+        this.trees.forEach(function(tree) {
+          
+        });
+
+        var page = Math.floor(index / this.pageSize);
+
+        if (this.cache[page]) {
+          return this.cache[page][index - page * this.pageSize];
+        }
+      }.bind(this);
+    };
+
+    describe('tree', function() {
+      var tree, items;
+      beforeEach(function() {
+        tree = new Tree(5, 100);
+
+        items = Array(50).fill(0).map(function(item, index) {
+          return {value: 'foo' + index};
+        });
+      });
+
+      it('should', function() {
+        expect(tree.start).to.eql(0);
+        expect(tree.size).to.eql(100);
+
+      });
+
+      it('should return undefined for non-cached item', function() {
+        expect(tree.getItem(0)).to.be.undefined;
+      });
+
+      it('should return cached item', function() {
+        tree.cache[0] = items;
+
+        expect(tree.getItem(0)).to.eql(items[0]);
+      });
+
+      it('should return cached item', function() {
+        tree.cache[1] = items;
+
+        expect(tree.getItem(50)).to.eql(items[0]);
+      });
+
+      it('should return cached item', function() {
+        tree.cache[0] = items;
+
+        tree.trees = [new Tree(5, 10)];
+        tree.trees[0].cache[0] = items;
+
+        expect(tree.getItem(5)).to.eql(items[0]);
+      });
+    });
+  </script>
+
+</body>
+
+</html>

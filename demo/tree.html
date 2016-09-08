@@ -44,15 +44,14 @@
           </template>
         </vaadin-grid-column>
 
-        <vaadin-grid-column>
+        <!-- <vaadin-grid-column>
           <template>
-            <!-- <paper-input value="{{item.name}}"></paper-input> -->
             <paper-button raised on-tap="_expand">Expand [[item.name]]</paper-button>
           </template>
           <template is="header">
             bar-h1
           </template>
-        </vaadin-grid-column>
+        </vaadin-grid-column> -->
 
       </vaadin-grid>
     </template>
@@ -74,7 +73,7 @@
                   console.log('requesting page ' + params.page, params.path);
                   setTimeout(function() {
                     var result = [];
-                    params.pageSize = params.path === '/' ? params.pageSize : 10;
+                    params.pageSize = params.path === '/' ? params.pageSize : 5;
                     var firstIndex = params.page * params.pageSize;
                     for (var i = 0; result.length < params.pageSize; i++) {
                       result.push({
@@ -82,7 +81,7 @@
                       });
                     }
                     callback(result);
-                  }.bind(this), 1000);
+                  }.bind(this), 0);
                 }.bind(this);
               }
             }
