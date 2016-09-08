@@ -16,30 +16,84 @@
 <body>
 
   <script>
-    var Tree = function(size, pageSize) {
-      this.start = 0;
-      this.size = 100;
+    var Tree = function(parent, size) {
+      this.parent = parent;
+      this.size = size;
       this.pageSize = 50;
       this.trees = [];
-
       this.cache = {};
+      
       this.getItem = function(index) {
-        this.trees.forEach(function(tree) {
-          
-        });
+        var nested = this.getNestedTree(index);
 
-        var page = Math.floor(index / this.pageSize);
+        if (nested) {
+          return nested.getItem(index - nested.parent - 1);
+        } else {
+          var page = Math.floor(index / this.pageSize);
 
-        if (this.cache[page]) {
-          return this.cache[page][index - page * this.pageSize];
+          if (this.cache[page]) {
+            return this.cache[page][index - page * this.pageSize];
+          }
         }
       }.bind(this);
+
+      this.getNestedTree = function(index) {
+        var nested = this.trees.filter(function(tree) {
+          return tree.parent < index && index <= (tree.parent + tree.size);
+        });
+
+        return nested.length > 0 ? nested[0] : undefined;
+      };
+
+      this.getNestingLevel = function(index) {
+        var nested = this.getNestedTree(index);
+
+        return nested ? (1 + nested.getNestingLevel(index - nested.parent - 1)) : 0;
+      };
+
+      this.getTree = function(index) {
+        var trees = this.trees.filter(function(tree) {
+          return tree.parent === index;
+        });
+
+        return trees.length > 0 ? trees[0] : undefined;
+      };
+
+      this.add = function(parent, size) {
+        var nested = this.getNestedTree(parent);
+
+        if (nested) {
+          nested.add(parent - nested.parent - 1, size);
+        } else {
+          var tree = this.getTree(parent);
+
+          if (tree) {
+            tree.size = size;
+          } else {
+            this.trees.push(new Tree(parent, size));
+          }
+        }
+      };
+
+      this.remove = function(parent) {
+        var tree = this.getTree(parent);
+
+        if (tree) {
+          this.trees.splice(this.trees.indexOf(tree), 1);
+        }
+      };
+
+      this.totalSize = function() {
+        return this.size + this.trees.reduce(function(curr, next) {
+          return curr + next.totalSize();
+        }, 0);
+      };
     };
 
     describe('tree', function() {
       var tree, items;
       beforeEach(function() {
-        tree = new Tree(5, 100);
+        tree = new Tree(0, 100);
 
         items = Array(50).fill(0).map(function(item, index) {
           return {value: 'foo' + index};
@@ -47,7 +101,7 @@
       });
 
       it('should', function() {
-        expect(tree.start).to.eql(0);
+        expect(tree.parent).to.eql(0);
         expect(tree.size).to.eql(100);
 
       });
@@ -68,13 +122,37 @@
         expect(tree.getItem(50)).to.eql(items[0]);
       });
 
-      it('should return cached item', function() {
+      it('should return nested cached item', function() {
         tree.cache[0] = items;
 
         tree.trees = [new Tree(5, 10)];
         tree.trees[0].cache[0] = items;
 
-        expect(tree.getItem(5)).to.eql(items[0]);
+        expect(tree.getItem(6)).to.eql(items[0]);
+      });
+
+      it('should return nesting level', function() {
+        tree.add(5, 10);
+        tree.add(6, 10);
+
+        expect(tree.getNestingLevel(5)).to.eql(0);
+        expect(tree.getNestingLevel(6)).to.eql(1);
+        expect(tree.getNestingLevel(7)).to.eql(2);
+      });
+
+      it('should update size on dupe add', function() {
+        tree.add(5, 10);
+        tree.add(5, 20);
+
+        expect(tree.totalSize()).to.eql(120);
+      });
+
+      it('should remove nested tree', function() {
+        tree.add(5, 10);
+
+        tree.remove(5);
+
+        expect(tree.totalSize()).to.eql(100);
       });
     });
   </script>
