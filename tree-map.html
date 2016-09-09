@@ -43,11 +43,29 @@
       .hierarchy-button[opened] {
         transform: rotateZ(90deg);
       }
+
+      /* Anim */
+      @keyframes vaadin-grid-spin-360 {
+        100% {
+          transform: rotateZ(360deg);
+        }
+      }
+      @-webkit-keyframes vaadin-grid-spin-360 {
+        100% {
+          -webkit-transform: rotateZ(360deg);
+          transform: rotateZ(360deg);
+        }
+      }
+
+      .hierarchy-button[loading] {
+        -webkit-animation: vaadin-grid-spin-360 1s linear infinite;
+        animation: vaadin-grid-spin-360 1s linear infinite;
+      }
     </style>
     <vaadin-grid-column id="column" width="[[_getColumnWidth()]]px" flex="0">
       <template>
         <div>
-          <span on-click="_toggleOpened" index="[[index]]" class="hierarchy-button" style="margin-left: [[_getPadding(index, _foo)]]px" opened$="[[_isHierarchyExpanded(index, _foo)]]"></span>
+          <span on-click="_toggleOpened" index="[[index]]" loading$=[[_isLoading(index,loading)]] class="hierarchy-button" style="margin-left: [[_getPadding(index, _foo, item)]]px" opened$="[[_isHierarchyExpanded(index, _foo, item)]]"></span>
           <span>[[index]]</span>
         </div>
       </template>
@@ -60,6 +78,10 @@
       observer: ['_hierarchyExpandedChanged(_hierarchyExpanded.splices)'],
 
       properties: {
+        loading: {
+          type: Number
+        },
+
         _hierarchyExpanded: {
           value: []
         },
@@ -68,6 +90,7 @@
         _foo: {
           value: 0
         }
+
       },
 
       ready: function() {
@@ -102,21 +125,30 @@
 
       },
 
+      _isLoading: function(index, loading) {
+        return index === loading;
+      },
+
       _toggleOpened: function (e) {
         var grid = this.$.column.grid;
         if (this._isHierarchyExpanded(e.model.index)) {
           console.log('remove');
           grid.tree.remove(e.model.index);
           grid._updateItems();
+          this._foo++;
         } else {
+          this.loading = e.model.index;
           grid.tree.add(e.model.index, 5);
           grid.tree.loadItem(e.model.index + 1, grid.dataSource, function() {
             grid._updateItems();
-          }); //temp hack
+            console.log('täh');
+            this.loading = null;
+            this._foo++;
+          }.bind(this)); //temp hack
         }
         // grid.clearCache();
         // grid._updateItems();
-        this._foo++;
+
       }
 
     });
@@ -169,11 +201,19 @@
 
       this.getNestedTreeSizeBefore3 = function(index) {
         var total = 0;
-        this.trees.forEach(function(tree) {
-          if (tree.parent + tree.totalSize() + total < index) {
-            total += tree.totalSize();
+
+        for(var i=0;i<this.trees.length;i++) {
+          var tree = this.trees[i];
+
+          if (tree.parent < index && index <= tree.parent + tree.totalSize()) {
+            return total;
           }
-        });
+
+          if (tree.parent + tree.totalSize() < index) {
+            total += tree.totalSize();
+            index -= tree.totalSize();
+          }
+        }
 
         return total;
       };
@@ -187,12 +227,12 @@
         return nested.length > 0 ? nested[0] : undefined;
       };
 
-      this.getTree = function(index) {
-        var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore(index);
-
-        return nested ? nested.getTree(index - nested.parent - 1) : this;
-      };
+      // this.getTree = function(index) {
+      //   var nested = this.getNestedTree(index);
+      //   index -= this.getNestedTreeSizeBefore(index);
+      //
+      //   return nested ? nested.getTree(index - nested.parent - 1) : this;
+      // };
 
       this.getNestingLevel = function(index) {
         var nested = this.getNestedTree(index);
@@ -215,12 +255,12 @@
       this.loadItem = function(index, dataSource, callback) {
         var nested = this.getNestedTree(index);
 //        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         if (nested) {
-          index -= this.getNestedTreeSizeBefore3(index);
           nested.loadItem(index - nested.parent - 1, dataSource, callback);
         } else {
-          var page = this.getPage(index);
+          var page = Math.floor(index / this.pageSize);
           if (this._pendingRequests.indexOf(page) === -1) {
             this._pendingRequests.push(page);
             var params =  {page: page, pageSize: this.pageSize, path: ''};
@@ -231,11 +271,13 @@
               params.parent = parentItem;
             }
             dataSource(params, function(items, size) {
-              console.log('data returned', parentItem, page, this);
               this._pendingRequests.splice(this._pendingRequests.indexOf(page), 1);
               this.cache[page] = items;
-              // this.size = size; // TODO:
-              callback(this.getItem(index));
+              if (size !== undefined) {
+                this.size = size; // TODO:
+              }
+
+              callback(items[index - page * this.pageSize]);
             }.bind(this));
           }
         }
