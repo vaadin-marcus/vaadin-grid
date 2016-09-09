@@ -70,6 +70,10 @@
         }
       },
 
+      ready: function() {
+        // this.tree = this.$.column.grid.tree;
+      },
+
       _getColumnWidth: function() {
         return this._getMaxHierarchyLevel() * 10 + 100;
       },
@@ -81,13 +85,7 @@
       // TODO: Base API's on items?
       // TODO: Implement
       _getItemHierarchyLevel: function(index) {
-        var level = 0;
-        for (var i = 1; i < 6; i++) {
-          if (this._isHierarchyExpanded(index - i)) {
-            level++;
-          }
-        }
-        return level;
+        return this.$.column.grid && this.$.column.grid.tree.getNestingLevel(index);
       },
 
       // TODO: Implement
@@ -97,7 +95,7 @@
 
       // TODO: Implement
       _isHierarchyExpanded: function(index) {
-        return this._hierarchyExpanded.indexOf(index) !== -1;
+        return this.$.column.grid && this.$.column.grid.tree.getNestingLevel(index) === this.$.column.grid.tree.getNestingLevel(index + 1) - 1;
       },
 
       _hierarchyExpandedChanged: function(e) {
@@ -106,14 +104,18 @@
 
       _toggleOpened: function (e) {
         var grid = this.$.column.grid;
-        if (this._isHierarchyExpanded(e.model.index)){
-          this.splice('_hierarchyExpanded', this._hierarchyExpanded.indexOf(e.model.index), 1);
-          grid.tree.remove(e.model.item.name + e.model.index);
+        if (this._isHierarchyExpanded(e.model.index)) {
+          console.log('remove');
+          grid.tree.remove(e.model.index);
+          grid._updateItems();
         } else {
-          grid.tree.add(e.model.item.name + e.model.index, e.model.index + 1, 5);
-          this.push('_hierarchyExpanded', e.model.index);
+          grid.tree.add(e.model.index, 5);
+          grid.tree.loadItem(6, grid.dataSource, function() {
+            grid._updateItems();
+          }); //temp hack
         }
-        grid.clearCache();
+        // grid.clearCache();
+        // grid._updateItems();
         this._foo++;
       }
 
@@ -122,219 +124,157 @@
 </dom-module>
 <script>
   (function() {
-    window.TreeMap = function() {
-      var nodes = [];
+    window.TreeCache = function(parent, size) {
+      this.parent = parent;
+      this.size = size;
+      this.pageSize = 50;
+      this.trees = [];
+      this.cache = {};
+      this._pendingRequests = [];
 
-      var _findFirst = function(index) {
-        var items = nodes.filter(function(n) {
-          return n.start <= index && n.end >= index;
-        });
+      this.getItem = function(index) {
+        var nested = this.getNestedTree(index);
 
-        return (items && items.length > 0) ? items[0] : null;
+        if (nested) {
+          return nested.getItem(index - nested.parent - 1);
+        } else {
+          var page = Math.floor(index / this.pageSize);
+
+          if (this.cache[page]) {
+            return this.cache[page][index - page * this.pageSize];
+          }
+        }
+      }.bind(this);
+
+      this.getNestedTreeSizeBefore = function(index) {
+        return this.trees.filter(function(tree) {
+          return tree.parent < index;
+        }).map(function(tree) {
+          return tree.totalSize();
+        }).reduce(function(curr, next) {
+          return curr + next;
+        }, 0);
       };
 
-      var _nodesForIndex = function(index, pageSize) {
-        var first = _findFirst(index);
-        var nodes = _findPath(first.path);
-
-        return nodes.filter(function(node) {
-          var result = pageSize >= 0;
-          pageSize -= (node.end - node.start);
-
-          return result;
+      this.getNestedTree = function(index) {
+        var nested = this.trees.filter(function(tree) {
+          return tree.parent < index && index <= (tree.parent + tree.totalSize());
         });
+
+        return nested.length > 0 ? nested[0] : undefined;
       };
 
-      var _findPath = function(path) {
-        return nodes.filter(function(n) {
-          return n.path === path;
-        });
+      this.getTree = function(index) {
+        var nested = this.getNestedTree(index);
+
+        return nested ? nested.getTree(index - nested.parent - 1) : this;
       };
 
-      var _updateIndexes = function() {
-        var start = 0;
+      this.getNestingLevel = function(index) {
+        var nested = this.getNestedTree(index);
 
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
+        return nested ? (1 + nested.getNestingLevel(index - nested.parent - 1)) : 0;
+      };
 
-          var length = node.end - node.start;
-          node.start = start;
-          node.end = start + length;
+      this.getPage = function(index) {
+        var nested = this.getNestedTree(index);
 
-          start += length + 1;
+        if (nested) {
+          return nested.getPage(index - nested.parent - 1);
+        } else {
+          return Math.floor(index / this.pageSize);
         }
       };
 
-      var _combineSiblings = function() {
-        for (var i = 0; i < nodes.length; i++) {
-          if (i + 1 < nodes.length) {
-            var node = nodes[i];
-            var nextNode = nodes[i + 1];
+      this.loadItem = function(index, dataSource, callback) {
+        var nested = this.getNestedTree(index);
 
-            if (node.path === nextNode.path) {
-              node.end = nextNode.end;
-              nodes.splice(i + 1, 1);
-
-              _combineSiblings();
-              return;
-            }
+        if (nested) {
+          nested.loadItem(index - nested.parent - 1, dataSource, callback);
+        } else {
+          var page = this.getPage(index);
+          if (this._pendingRequests.indexOf(page) === -1) {
+            this._pendingRequests.push(page);
+            var params =  {page: page, pageSize: this.pageSize, path: index + '-'};
+            dataSource(params, function(items, size) {
+              this._pendingRequests.splice(this._pendingRequests.indexOf(page), 1);
+              this.cache[page] = items;
+              // this.size = size; // TODO:
+              callback(this.getItem(index));
+            }.bind(this));
           }
         }
       };
 
-      return {
-        add: function(path, index, count) {
-          if (_findPath(path).length > 0) {
-            throw Error(path + ' already added.');
-          }
+      this.pendingRequests = function() {
+        return this._pendingRequests.length + this.trees
+          .map(function(tree) { return tree.pendingRequests(); })
+          .reduce(function(curr, next) {
+              return curr + next;
+            }, 0);
+      };
+      //
+      // this.loadPage = function(index) {
+      //   var nested = this.getNestedTree(index);
+      //
+      //   if (nested) {
+      //     this.loadPage(index - nested.parent - 1);
+      //   } else {
+      //     var page = this.getPage(index);
+      //     var path = this.getPath(index);
+      //
+      //     this.dataSource(page, path etc.) {
+      //       this.cache[page] = items;
+      //       this.size = size;
+      //
+      //       // -> updateItems;
+      //     };
+      //   }
+      // };
 
-          var newNode = {
-            path: path,
-            start: index,
-            end: index + count - 1,
-            count: count
-          };
+      this.getParentTree = function(index) {
+        var trees = this.trees.filter(function(tree) {
+          return tree.parent === index;
+        });
 
-          for (var i = 0; i < nodes.length; i++) {
-            var node = nodes[i];
+        return trees.length > 0 ? trees[0] : undefined;
+      };
 
-            if (node.start <= index && node.end >= index) {
-              var splittedStart = {
-                path: node.path,
-                start: node.start,
-                end: index - 1,
-                count: node.count
-              };
-              var splittedEnd = {
-                path: node.path,
-                start: index + count,
-                end: index + count + (node.end - node.start) - (splittedStart.end - splittedStart.start) - 1,
-                count: node.count
-              };
-              nodes.splice(i, 1, splittedStart, newNode, splittedEnd);
+      this.add = function(index, size) {
+        var nested = this.getNestedTree(index);
 
-              _updateIndexes();
-              return;
-            }
-          }
-          nodes.push(newNode);
-        },
+        if (nested) {
+          nested.add(index - nested.parent - 1, size);
+        } else {
+          var tree = this.getParentTree(index);
 
-        remove: function(path) {
-          var indexes = _findPath(path).map(function(p) {
-            return nodes.indexOf(p);
-          });
-
-          var first = indexes[0];
-          var last = indexes[indexes.length - 1];
-
-          nodes.splice(first, last - first + 1);
-
-          _updateIndexes();
-          _combineSiblings();
-        },
-
-        getNormalizedIndex: function(index, page, pageSize) {
-          var offset = - page.page * pageSize;
-          for(var i=0;i<page.nodes.length;i++) {
-            var node = page.nodes[i];
-            var count = node.end - node.start;
-
-            if(index <= node.end) {
-              return index - node.start + offset;
-            } else {
-              offset += (node.end - node.start) + 1;
-            }
-          }
-        },
-
-        getStartIndex: function(page, pageSize) {
-          var index = page.page * pageSize;
-          var nodes = _findPath(page.path);
-
-          for(var i=0;nodes.length-1;i++) {
-            var node = nodes[i];
-            if (index <= node.end) {
-              return Math.abs(index - node.start);
-            }
-
-            index -= node.count;
-          }
-
-          return Math.abs(index - nodes[nodes.length - 1].start);
-
-          // return _findPath(page.path)[page.page].start;
-        },
-
-        getPath: function(index) {
-          var first = _findFirst(index);
-
-          return first ? first.path : undefined;
-        },
-
-        _cache: {},
-
-        clearCache: function() {
-          this._cache = {};
-        },
-
-        getNode: function(index) {
-          return _findFirst(index);
-        },
-
-        getPage: function(index, pageSize) {
-          var first = _findFirst(index);
-
-          if (first) {
-            var pageIndex = index - first.start;
-            var page = Math.floor(pageIndex / pageSize);
-            var nodes = _nodesForIndex(index, pageSize);
-
-            if (!this._cache[first.path] || this._cache[first.path][page] === undefined) {
-              this._cache[first.path] = this._cache[first.path] || [];
-              this._cache[first.path][page] = {path: first.path, page: page, nodes: nodes};
-            }
-
-            return this._cache[first.path][page];
-
-            // return {
-            //   path: first.path,
-            //   page: Math.floor(pageIndex / pageSize)
-            // };
-          }
-        },
-
-        getPages: function(start, end, pageSize) {
-          var pages = [];
-
-          if (start <= end) {
-            for (var i = start; i <= end; i++) {
-              var page = this.getPage(i, pageSize);
-
-              if (pages.filter(function(p) {
-                  return p.path === page.path && p.page === page.page;
-                }).length === 0) {
-                pages.push(page);
-              }
-            }
+          if (tree) {
+            tree.size = size;
           } else {
-            for (var i = start; i >= end; i--) {
-              var page = this.getPage(i, pageSize);
-
-              if (pages.filter(function(p) {
-                  return p.path === page.path && p.page === page.page;
-                }).length === 0) {
-                pages.push(page);
-              }
-            }
+            var child = new TreeCache(index - this.getNestedTreeSizeBefore(index), size);
+            this.trees.push(child);
           }
+        }
+      };
 
-          return pages;
-        },
+      this.remove = function(index) {
+        var nestedTree = this.getParentTree(index);
 
-        //public to help debugging
-        _nodes: nodes,
-        _nodesForIndex: _nodesForIndex
+        if (nestedTree) {
+          this.trees.splice(this.trees.indexOf(nestedTree), 1);
+        } else {
+          // TODO: can be optimized later to iterate only trees that the index is
+          // inside of.
+          this.trees.forEach(function(tree) {
+            tree.remove(index - tree.parent - 1);
+          });
+        }
+      };
+
+      this.totalSize = function() {
+        return this.size + this.trees.reduce(function(curr, next) {
+          return curr + next.totalSize();
+        }, 0);
       };
     };
   })();

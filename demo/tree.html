@@ -73,7 +73,7 @@
                   console.log('requesting page ' + params.page, params.path);
                   setTimeout(function() {
                     var result = [];
-                    params.pageSize = params.path === '/' ? params.pageSize : 5;
+                    // params.pageSize = params.path === '/' ? params.pageSize : 5;
                     var firstIndex = params.page * params.pageSize;
                     for (var i = 0; result.length < params.pageSize; i++) {
                       result.push({

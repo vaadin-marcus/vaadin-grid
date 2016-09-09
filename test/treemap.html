@@ -11,89 +11,16 @@
 
   <link rel="import" href="helpers.html">
   <link rel="import" href="../vaadin-grid.html">
+  <link rel="import" href="tree-map.html">
 </head>
 
 <body>
 
   <script>
-    var Tree = function(parent, size) {
-      this.parent = parent;
-      this.size = size;
-      this.pageSize = 50;
-      this.trees = [];
-      this.cache = {};
-      
-      this.getItem = function(index) {
-        var nested = this.getNestedTree(index);
-
-        if (nested) {
-          return nested.getItem(index - nested.parent - 1);
-        } else {
-          var page = Math.floor(index / this.pageSize);
-
-          if (this.cache[page]) {
-            return this.cache[page][index - page * this.pageSize];
-          }
-        }
-      }.bind(this);
-
-      this.getNestedTree = function(index) {
-        var nested = this.trees.filter(function(tree) {
-          return tree.parent < index && index <= (tree.parent + tree.size);
-        });
-
-        return nested.length > 0 ? nested[0] : undefined;
-      };
-
-      this.getNestingLevel = function(index) {
-        var nested = this.getNestedTree(index);
-
-        return nested ? (1 + nested.getNestingLevel(index - nested.parent - 1)) : 0;
-      };
-
-      this.getTree = function(index) {
-        var trees = this.trees.filter(function(tree) {
-          return tree.parent === index;
-        });
-
-        return trees.length > 0 ? trees[0] : undefined;
-      };
-
-      this.add = function(parent, size) {
-        var nested = this.getNestedTree(parent);
-
-        if (nested) {
-          nested.add(parent - nested.parent - 1, size);
-        } else {
-          var tree = this.getTree(parent);
-
-          if (tree) {
-            tree.size = size;
-          } else {
-            this.trees.push(new Tree(parent, size));
-          }
-        }
-      };
-
-      this.remove = function(parent) {
-        var tree = this.getTree(parent);
-
-        if (tree) {
-          this.trees.splice(this.trees.indexOf(tree), 1);
-        }
-      };
-
-      this.totalSize = function() {
-        return this.size + this.trees.reduce(function(curr, next) {
-          return curr + next.totalSize();
-        }, 0);
-      };
-    };
-
     describe('tree', function() {
       var tree, items;
       beforeEach(function() {
-        tree = new Tree(0, 100);
+        tree = new TreeCache(0, 100);
 
         items = Array(50).fill(0).map(function(item, index) {
           return {value: 'foo' + index};
@@ -125,10 +52,20 @@
       it('should return nested cached item', function() {
         tree.cache[0] = items;
 
-        tree.trees = [new Tree(5, 10)];
-        tree.trees[0].cache[0] = items;
+        tree.add(5, 10);
+        tree.getNestedTree(6).cache[0] = items;
 
         expect(tree.getItem(6)).to.eql(items[0]);
+      });
+
+      it('should return correct item after nested items', function() {
+        tree.cache[0] = items;
+
+        tree.add(5, 5);
+        tree.getNestedTree(6).cache[0] = items;
+
+        // first item after nested
+        expect(tree.getItem(11)).to.eql(items[6]);
       });
 
       it('should return nesting level', function() {
@@ -138,6 +75,25 @@
         expect(tree.getNestingLevel(5)).to.eql(0);
         expect(tree.getNestingLevel(6)).to.eql(1);
         expect(tree.getNestingLevel(7)).to.eql(2);
+      });
+
+      it('should return page', function() {
+        tree.add(5, 10);
+        tree.add(6, 60);
+
+        expect(tree.getPage(5)).to.eql(0);
+        expect(tree.getPage(6)).to.eql(0);
+        expect(tree.getPage(7)).to.eql(0);
+        expect(tree.getPage(57)).to.eql(1);
+      });
+
+      it('should return path', function() {
+        tree.add(5, 10);
+        tree.add(6, 10);
+
+        expect(tree.getPath(5)).to.eql('/');
+        expect(tree.getPath(6)).to.eql('/foo');
+        expect(tree.getPath(7)).to.eql('/bar');
       });
 
       it('should update size on dupe add', function() {
@@ -153,6 +109,13 @@
         tree.remove(5);
 
         expect(tree.totalSize()).to.eql(100);
+      });
+
+      it('should return tree at index', function() {
+        tree.add(5, 10);
+
+        expect(tree.getTree(5)).to.eql(tree);
+        expect(tree.getTree(6)).to.eql(tree.trees[0]);
       });
     });
   </script>

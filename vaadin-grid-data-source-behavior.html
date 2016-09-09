@@ -104,37 +104,57 @@
     ],
 
     created: function() {
-      this.tree = new TreeMap();
-      this.tree.add('/', 0, 10000);
+      this.tree = new TreeCache(0, 10000);
+      // this.tree.add(0, 10000);
     },
 
     _getCachedItem: function(index) {
+      return this.tree.getItem(index);
       // var node = this.tree.getNode(index);
-      var page = this._getPageForIndex(index);
-      var p = page.cache;
-
-      if (p) {
-        return p[this.tree.getNormalizedIndex(index, page, this.pageSize)];
-        // return p[index - page.start];
-      } else {
-        return null;
-      }
+      // var page = this._getPageForIndex(index);
+      // var p = page.cache;
+      //
+      // if (p) {
+      //   return p[this.tree.getNormalizedIndex(index, page, this.pageSize)];
+      //   // return p[index - page.start];
+      // } else {
+      //   return null;
+      // }
     },
 
     _getItem: function(index, el) {
-      this._updateItem(el, this._getCachedItem(index));
-      // this._eagerlyLoadPages();
-      //
-      var uncachedPages = this._uncachedPagesForPhysicalItems();
-      if (uncachedPages.length > 0) {
+      var item = this._getCachedItem(index);
+
+      if (item) {
+        this._updateItem(el, item);
+      } else if (this.dataSource) {
         this.loading = true;
-        // avoid debounce during scroll to mitigate scrollbar flickering on iOS.
-        // debouncing only when data is needed to be fetched. eager loading
-        // should somewhat prevent from getting here when scrolling slowly.
         this.debounce('load', function() {
-          uncachedPages.forEach(this._loadPage.bind(this));
+          this.tree.loadItem(index, this.dataSource, function(item) {
+            if (this.tree.pendingRequests() === 0) {
+              this._updateItems();
+              this.loading = false;
+            }
+          }.bind(this));
         }, 100);
       }
+      // this._eagerlyLoadPages();
+      //
+
+      // var trees = this._treesForPhysicalItems();
+      // trees.forEach(function(tree) {
+      //
+      // });
+      // var uncachedPages = this._uncachedPagesForPhysicalItems();
+      // if (uncachedPages.length > 0) {
+      //   this.loading = true;
+      //   // avoid debounce during scroll to mitigate scrollbar flickering on iOS.
+      //   // debouncing only when data is needed to be fetched. eager loading
+      //   // should somewhat prevent from getting here when scrolling slowly.
+      //   this.debounce('load', function() {
+      //     uncachedPages.forEach(this._loadPage.bind(this));
+      //   }, 100);
+      // }
     },
 
     _cachedPagesForPhysicalItems: function() {
@@ -165,6 +185,37 @@
       }
     },
 
+    _hasUncachedItemsForPhysicalItems: function() {
+      return this.$.scroller._physicalItems
+       .filter(function(row) { return row.index; })
+       .map(function(row) {
+         return this.tree.getCachedItem(row.index);
+       })
+       .filter(function(item) {
+         return item === null;
+       }).length > 0;
+    },
+
+    _treesForPhysicalItems: function() {
+      // TODO: potentially heavy operation to run first visible index,
+      // reconsider if performance issues occur on data binding / scrolling.
+      var firstVisiblePage = this._getPageForIndex(this.$.scroller.firstVisibleIndex + this.$.scroller._vidxOffset);
+
+      return [firstVisiblePage].concat(
+       this.$.scroller._physicalItems
+        .filter(function(row) { return row.index; })
+        .map(function(row) {
+        return this.tree.getTree(row.index);
+      }.bind(this)))
+      .reduce(function(prev, curr) {
+        if (prev.indexOf(curr) === -1) {
+          prev.push(curr);
+        }
+
+        return prev;
+      }, []);
+    },
+
     _pagesForPhysicalItems: function() {
       // TODO: potentially heavy operation to run first visible index,
       // reconsider if performance issues occur on data binding / scrolling.
@@ -187,32 +238,26 @@
 
     _updateItems: function(page, items) {
       // var start = this.tree.getStartIndex(page, this.pageSize);
-      page.nodes.forEach(function(node) {
-        for(var i=node.start;i<=node.end;i++) {
+      this.$.scroller._physicalItems.forEach(function(row) {
+        var index = row.index;
+        this._updateItem(row, this._getCachedItem(index));
 
-          var row = this.$.scroller._virtualIndexToItem[i];
-          if (row) {
-            var index = this.tree.getNormalizedIndex(i, page, this.pageSize);
-            this._updateItem(row, items[index]);
-
-            // update heights if any of the items change.
-            // TODO: in a way these should be obsolete, since _update() is called
-            // on scrollHandler every time tiles are recycled. And the function we
-            // are currently in is called as a result from calling assignModels when
-            // tiles are being recycled. I really should draw a diagram of all this.
-            if (!this.$.scroller.hasAttribute('has-data')) {
-              // First set of actual data set to rows, have average height re-measured
-              this.$.scroller._resetAverage();
-              this.$.scroller.toggleAttribute('has-data', true);
-            }
-
-            this.debounce('update-heights', function() {
-              this.$.scroller._updateMetrics();
-              this.$.scroller._positionItems();
-              this.$.scroller._updateScrollerSize();
-            }, 1);
-          }
+        // update heights if any of the items change.
+        // TODO: in a way these should be obsolete, since _update() is called
+        // on scrollHandler every time tiles are recycled. And the function we
+        // are currently in is called as a result from calling assignModels when
+        // tiles are being recycled. I really should draw a diagram of all this.
+        if (!this.$.scroller.hasAttribute('has-data')) {
+          // First set of actual data set to rows, have average height re-measured
+          this.$.scroller._resetAverage();
+          this.$.scroller.toggleAttribute('has-data', true);
         }
+
+        this.debounce('update-heights', function() {
+          this.$.scroller._updateMetrics();
+          this.$.scroller._positionItems();
+          this.$.scroller._updateScrollerSize();
+        }, 1);
       }.bind(this));
       //
       // for(var i=0;i<items.length;i++) {
@@ -269,7 +314,7 @@
      * Clears the cached pages and reloads data from datasource when needed.
      */
     clearCache: function() {
-      this.tree.clearCache();
+      // this.tree.clearCache();
       this._pendingRequests = [];
       this.$.scroller._update();
       this._flushItemsDebouncer();
