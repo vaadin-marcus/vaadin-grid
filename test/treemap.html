@@ -68,6 +68,37 @@
         expect(tree.getItem(11)).to.eql(items[6]);
       });
 
+      it('should return correct nested item after nested items', function() {
+        tree.cache[0] = items;
+
+        tree.add(0, 5);
+        tree.getNestedTree(1).cache[0] = items;
+
+        tree.add(7, 5);
+        tree.getNestedTree(8).cache[0] = items;
+
+        expect(tree.getItem(8)).to.eql(items[0]);
+        expect(tree.getItem(9)).to.eql(items[1]);
+        expect(tree.getItem(10)).to.eql(items[2]);
+        expect(tree.getItem(11)).to.eql(items[3]);
+        expect(tree.getItem(12)).to.eql(items[4]);
+      });
+
+      it('should return correct nested item after two levels nesting', function() {
+        tree.cache[0] = items;
+
+        tree.add(0, 5);
+        tree.getNestedTree(1).cache[0] = items;
+
+        tree.add(7, 5);
+        tree.getNestedTree(8).cache[0] = items;
+
+        tree.add(8, 5);
+        tree.getNestedTree(9).trees[0].cache[0] = items;
+
+        expect(tree.getItem(9)).to.eql(items[0]);
+      });
+
       it('should return nesting level', function() {
         tree.add(5, 10);
         tree.add(6, 10);

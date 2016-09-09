@@ -134,7 +134,7 @@
 
       this.getItem = function(index) {
         var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         if (nested) {
           return nested.getItem(index - nested.parent - 1);
@@ -167,6 +167,17 @@
         }, 0);
       };
 
+      this.getNestedTreeSizeBefore3 = function(index) {
+        var total = 0;
+        this.trees.forEach(function(tree) {
+          if (tree.parent + tree.totalSize() + total < index) {
+            total += tree.totalSize();
+          }
+        });
+
+        return total;
+      };
+
       this.getNestedTree = function(index) {
         var nested = this.trees.filter(function(tree) {
           var i = tree.parent + this.getNestedTreeSizeBefore(tree.parent);
@@ -185,14 +196,14 @@
 
       this.getNestingLevel = function(index) {
         var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         return nested ? (1 + nested.getNestingLevel(index - nested.parent - 1)) : 0;
       };
 
       this.getPage = function(index) {
         var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         if (nested) {
           return nested.getPage(index - nested.parent - 1);
@@ -203,16 +214,24 @@
 
       this.loadItem = function(index, dataSource, callback) {
         var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+//        index -= this.getNestedTreeSizeBefore2(index);
 
         if (nested) {
+          index -= this.getNestedTreeSizeBefore3(index);
           nested.loadItem(index - nested.parent - 1, dataSource, callback);
         } else {
           var page = this.getPage(index);
           if (this._pendingRequests.indexOf(page) === -1) {
             this._pendingRequests.push(page);
             var params =  {page: page, pageSize: this.pageSize, path: ''};
+            if (this.parentTree) {
+              var parentPage = Math.floor(this.parent / this.parentTree.pageSize);
+              var parentIndex = this.parent - parentPage * this.parentTree.pageSize;
+              var parentItem = this.parentTree.cache[parentPage][parentIndex];
+              params.parent = parentItem;
+            }
             dataSource(params, function(items, size) {
+              console.log('data returned', parentItem, page, this);
               this._pendingRequests.splice(this._pendingRequests.indexOf(page), 1);
               this.cache[page] = items;
               // this.size = size; // TODO:
@@ -249,7 +268,7 @@
       // };
 
       this.getParentTree = function(index) {
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
         var trees = this.trees.filter(function(tree) {
           return tree.parent === index;
         });
@@ -259,7 +278,7 @@
 
       this.add = function(index, size) {
         var nested = this.getNestedTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         if (nested) {
           nested.add(index - nested.parent - 1, size);
@@ -270,14 +289,19 @@
             tree.size = size;
           } else {
             var child = new TreeCache(index, size);
+            child.parentTree = this;
             this.trees.push(child);
+
+            this.trees.sort(function(a, b) {
+              return a.parent > b.parent;
+            });
           }
         }
       };
 
       this.remove = function(index) {
         var nestedTree = this.getParentTree(index);
-        index -= this.getNestedTreeSizeBefore2(index);
+        index -= this.getNestedTreeSizeBefore3(index);
 
         if (nestedTree) {
           this.trees.splice(this.trees.indexOf(nestedTree), 1);

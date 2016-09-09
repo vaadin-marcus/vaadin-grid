@@ -70,14 +70,15 @@
             dataSource: {
               value: function() {
                 return function(params, callback) {
-                  console.log('requesting page ' + params.page, params.path);
+                  console.log('requesting page ' + params.page);
                   setTimeout(function() {
                     var result = [];
                     // params.pageSize = params.path === '/' ? params.pageSize : 5;
                     var firstIndex = params.page * params.pageSize;
                     for (var i = 0; result.length < params.pageSize; i++) {
+                      var prefix = params.parent ? params.parent.name + '-' : '';
                       result.push({
-                        name: params.path +'name-' + (firstIndex + i)
+                        name: prefix +'name-' + (firstIndex + i)
                       });
                     }
                     callback(result);
