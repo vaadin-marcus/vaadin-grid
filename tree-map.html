@@ -138,13 +138,15 @@
           this._foo++;
         } else {
           this.loading = e.model.index;
-          grid.tree.add(e.model.index, 5);
-          grid.tree.loadItem(e.model.index + 1, grid.dataSource, function() {
+          //grid.tree.add(e.model.index, 5);
+          var params = {page: 0, pageSize: grid.pageSize, parent: e.model.item};
+          grid.dataSource(params, function(items, size) {
+            var tree = grid.tree.add(e.model.index, size);
+            tree.cache[0] = items;
             grid._updateItems();
-            console.log('täh');
             this.loading = null;
             this._foo++;
-          }.bind(this)); //temp hack
+          }.bind(this));
         }
         // grid.clearCache();
         // grid._updateItems();
@@ -329,6 +331,7 @@
 
           if (tree) {
             tree.size = size;
+            return tree;
           } else {
             var child = new TreeCache(index, size);
             child.parentTree = this;
@@ -337,6 +340,8 @@
             this.trees.sort(function(a, b) {
               return a.parent > b.parent;
             });
+
+            return child;
           }
         }
       };

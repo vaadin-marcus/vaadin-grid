@@ -81,7 +81,12 @@
                         name: prefix +'name-' + (firstIndex + i)
                       });
                     }
-                    callback(result);
+                    if (params.parent) {
+                      callback(result, Math.floor((1 + Math.random()) * 3));
+                    } else {
+                      callback(result);
+                    }
+
                   }.bind(this), 500);
                 }.bind(this);
               }
