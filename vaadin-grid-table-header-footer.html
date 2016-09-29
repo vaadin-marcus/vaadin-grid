@@ -3,26 +3,86 @@
     var vaadinGridTableRowContainerBehavior = {
       properties: {
         columns: Array,
+        columnGroups: Array,
         frozenColumns: Number,
         _rows: Array
       },
 
-      observers: ['_columnsChanged(columns.*, frozenColumns)', '_rowsChanged(_rows)'],
+      observers: ['_columnsChanged(columns.*, frozenColumns)', '_rowsChanged(_rows)', '_columnGroupsChanged(columnGroups.*)'],
+
+      _columnGroupsChanged: function(e) {
+        if (e.path.indexOf('columnGroups.#') === 0) {
+          var groupIndex = parseInt(e.path.split('.')[1].substring(1));
+          var group = this.columnGroups[groupIndex];
+          this._rows.forEach(function(row) {
+            var actualIndex = row.columns.indexOf(group);
+            if (actualIndex > -1) {
+              row.notifyPath(e.path.replace('columnGroups.#' + groupIndex, 'columns.#' + actualIndex), e.value);
+            }
+          });
+        }
+      },
+
+      _childColumns: function(columns) {
+        return columns.map(function(col) {
+          if (col.is === 'vaadin-grid-column-group') {
+            return Polymer.dom(col).children.filter(function(el) {
+              return el.localName.indexOf('vaadin-grid-column') === 0;
+            });
+          } else {
+            return [col];
+          }
+        }).reduce(function(prev, curr) {
+          return prev.concat(curr);
+        }, []);
+      },
 
       _columnsChanged: function(e) {
+        //TODO: footers not yet supported.
+        if (this.is === 'vaadin-grid-table-footer') {
+          return;
+        }
         if (e.path === 'columns') {
-          this._rows = Array.apply(null, Array(this._rowCount(e.value))).map(function(item, index) {
-            var row = this._createRow();
-            row.rowIndex = index;
-            row.frozenColumns = this.frozenColumns;
-            row.target = this.domHost.domHost;
-            row.columns = e.value;
+          //TODO: should always be vaadin-grid. using domHost.domHost isn't
+          // fully waterproof in case columns come via <content> elements.
+          var target = this.domHost.domHost;
 
-            return row;
-          }.bind(this));
+          //TODO: this calls for a property. it's missing multiselect etc.
+          var columns = Polymer.dom(target).children.filter(function(el) {
+            return el.localName.indexOf('vaadin-grid-column') === 0;
+          });
+
+          var hasChildren = function(cols) {
+            return cols.filter(function(col) {
+              return col.localName === 'vaadin-grid-column-group';
+            }).length > 0;
+          };
+
+          var rows = [];
+
+          var row = this._createRow();
+          row.target = this.domHost.domHost;
+          row.columns = columns;
+          rows.push(row);
+
+          while (hasChildren(columns)) {
+            columns = this._childColumns(columns);
+
+            var row = this._createRow();
+            row.target = this.domHost.domHost;
+            row.columns = columns;
+            rows.push(row);
+          }
+
+          this._rows = rows;
         } else if (e.path.indexOf('columns.#') === 0) {
+          var columnIndex = parseInt(e.path.split('.')[1].substring(1));
+          var column = this.columns[columnIndex];
           this._rows.forEach(function(row) {
-            row.notifyPath(e.path, e.value);
+            var actualIndex = row.columns.indexOf(column);
+            if (actualIndex > -1) {
+              row.notifyPath(e.path.replace('.#' + columnIndex, '.#' + actualIndex), e.value);
+            }
           });
         }
       },
@@ -43,12 +103,6 @@
 
       _createRow: function() {
         return document.createElement('tr', 'vaadin-grid-table-header-row');
-      },
-
-      _rowCount: function(columns) {
-        return Math.max.apply(Math, columns.map(function(column) {
-          return Polymer.dom(column).querySelectorAll('[is="header"]').length;
-        }));
       }
     });
 
@@ -59,12 +113,6 @@
 
       _createRow: function() {
         return document.createElement('tr', 'vaadin-grid-table-footer-row');
-      },
-
-      _rowCount: function(columns) {
-        return Math.max.apply(Math, columns.map(function(column) {
-          return Polymer.dom(column).querySelectorAll('[is="footer"]').length;
-        }));
       }
     });
   })();

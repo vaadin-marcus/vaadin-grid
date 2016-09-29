@@ -33,7 +33,7 @@
           white-space: nowrap;
         }
       </style>
-      <vaadin-grid id="component" data-source="[[dataSource]]" size="10000000" frozen-columns="1" on-item-changed="_itemChanged" multi-selection>
+      <vaadin-grid id="component" data-source="[[dataSource]]" size="10000000" frozen-columns="1" on-item-changed="_itemChanged">
 
         <template is="row-details">
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
@@ -50,64 +50,71 @@
           <template is="header">
             <b class="elItem">foo-h1</b>
           </template>
-          <template is="header">
+          <!-- <template is="header">
             foo-h2
           </template>
           <template is="footer">
             footer
-          </template>
+          </template> -->
         </vaadin-grid-column>
 
-        <vaadin-grid-column>
-          <template>
-            <paper-input value="{{item.name}}"></paper-input>
-          </template>
-          <template is="header">
-            bar-h1
-          </template>
-          <template is="header">
-            bar-h2
-          </template>
-          <template is="footer">
-            Oh yes!
-          </template>
-        </vaadin-grid-column>
+        <vaadin-grid-column-group>
+          <template is="header">G2</template>
 
-        <vaadin-grid-column width="400px">
-          <template>
-            <div>baz-[[index]]</div>
-          </template>
-          <template is="header">
-            baz-h1
-          </template>
-          <template is="header" colspan="2">
-            baz-h2
-          </template>
-        </vaadin-grid-column>
+          <vaadin-grid-column width="20%">
+            <template>
+              <button onclick="document.querySelector('vaadin-grid')[(this._foo = !this._foo) ? 'expandItem' : 'collapseItem']()">[[index]]</button>
+            </template>
+            <template is="header">
+              qux-h1
+            </template>
+            <!-- <template is="header">
+              qux-h2
+            </template> -->
+          </vaadin-grid-column>
+        <vaadin-grid-column-group>
+          <template is="header">G1</template>
+          <vaadin-grid-column width="100px">
+            <template>
+              <paper-input value="{{item.name}}"></paper-input>
+            </template>
+            <template is="header">
+              bar-h1
+            </template>
+            <!-- <template is="header">
+              bar-h2
+            </template>
+            <template is="footer">
+              Oh yes!
+            </template> -->
+          </vaadin-grid-column>
 
-        <vaadin-grid-column width="20%">
-          <template>
-            <button onclick="document.querySelector('vaadin-grid')[(this._foo = !this._foo) ? 'expandItem' : 'collapseItem']()">[[index]]</button>
-          </template>
-          <template is="header">
-            qux-h1
-          </template>
-          <template is="header">
-            qux-h2
-          </template>
-        </vaadin-grid-column>
+          <vaadin-grid-column width="400px">
+            <template>
+              <div>baz-[[index]]</div>
+            </template>
+            <template is="header">
+              baz-h1
+            </template>
+            <!-- <template is="header" colspan="2">
+              baz-h2
+            </template> -->
+          </vaadin-grid-column>
+        </vaadin-grid-column-group>
 
-        <vaadin-grid-column min-width="100px">
+
+        <vaadin-grid-column width="100px">
           <template>
             <paper-checkbox checked="{{expanded}}">Details</paper-checkbox>
           </template>
           <template is="header">
             derp
           </template>
-          <template is="header">
+          <!-- <template is="header">
             derp
-          </template>
+          </template> -->
         </vaadin-grid-column>
+      </vaadin-grid-column-group>
 
       </vaadin-grid>
     </template>

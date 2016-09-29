@@ -133,7 +133,7 @@
         <div is="vaadin-grid-sizer" scroll-height="[[_estScrollHeight]]" columns="[[columns]]">
         </div>
       </caption>
-      <thead id="header" is="vaadin-grid-table-header" columns="[[columns]]" frozen-columns="[[frozenColumns]]"></thead>
+      <thead id="header" is="vaadin-grid-table-header" columns="[[columns]]" column-groups="[[columnGroups]]" frozen-columns="[[frozenColumns]]"></thead>
       <tbody id="items"></tbody>
       <tfoot id="footer" is="vaadin-grid-table-footer" columns="[[columns]]" frozen-columns="[[frozenColumns]]"></tfoot>
     </table>
@@ -164,6 +164,7 @@
       size: Number,
 
       columns: Array,
+      columnGroups: Array,
       frozenColumns: {
         value: 0
       },

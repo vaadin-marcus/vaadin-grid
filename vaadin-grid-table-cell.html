@@ -61,6 +61,7 @@
       },
 
       observers: ['_columnChanged(column)',
+        '_columnTemplateChanged(column.template)',
         '_templateChanged(template, target)',
         '_expandedChanged(expanded, instance)',
         '_indexChanged(index, instance)',
@@ -80,11 +81,10 @@
 
       _columnChanged: function(column) {
         this.template = column.template;
-        this.listen(column, 'template-changed', '_columnTemplateChanged');
       },
 
-      _columnTemplateChanged: function(e) {
-        this.template = e.detail.value;
+      _columnTemplateChanged: function(template) {
+        this.template = template;
       },
 
       _expandedChanged: function(expanded, instance) {
@@ -160,6 +160,7 @@
             }
           });
         }
+
         Polymer.dom(item).appendChild(this.instance.root);
       },
 
@@ -223,31 +224,6 @@
       }
     };
 
-    var vaadinGridRowContainerCellBehavior = {
-      observers: ['_rowIndexChanged(rowIndex, _rowContainerObjects)'],
-
-      properties: {
-        colspan: {
-          type: Number,
-          notify: true
-        },
-        rowIndex: Number,
-        _rowContainerObjects: Array
-      },
-
-      _rowContainerObjectsChanged: function(e) {
-        this._rowContainerObjects = e.detail.value;
-      },
-
-      _rowIndexChanged: function(rowIndex, rowContainerObjects) {
-        if (rowContainerObjects[rowIndex]) {
-          this.template = rowContainerObjects[rowIndex].template;
-          this.colspan = rowContainerObjects[rowIndex].colspan;
-        }
-      }
-
-    };
-
     Polymer({
       is: 'vaadin-grid-table-cell',
 
@@ -296,13 +272,23 @@
 
       behaviors: [
         Polymer.Templatizer,
-        vaadinGridTableCellBehavior,
-        vaadinGridRowContainerCellBehavior
+        vaadinGridTableCellBehavior
       ],
 
+      observers: ['_columnHeaderTemplateChanged(column.headerTemplate)'],
+
+      _columnHeaderTemplateChanged: function(template) {
+        if (!this.group || this.column.is === 'vaadin-grid-column-group') {
+          this.template = template;
+        }
+      },
+
+      _columnTemplateChanged: function(e) {
+        // no-op
+      },
+
       _columnChanged: function(column) {
-        this._rowContainerObjects = column.headers;
-        this.listen(column, 'headers-changed', '_rowContainerObjectsChanged');
+        // no-op
       }
 
     });
@@ -314,13 +300,10 @@
 
       behaviors: [
         Polymer.Templatizer,
-        vaadinGridTableCellBehavior,
-        vaadinGridRowContainerCellBehavior
+        vaadinGridTableCellBehavior
       ],
 
       _columnChanged: function(column) {
-        this._rowContainerObjects = column.footers;
-        this.listen(column, 'footers-changed', '_rowContainerObjectsChanged');
       }
 
     });

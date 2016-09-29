@@ -99,26 +99,13 @@
       },
 
       _updateCells: function() {
-        var size = this.cells.length;
-        if (this.columns.length == size) {
-          for (var i = 0, colspan; i < size; i += colspan) {
-            var cell = this.cells[i];
-            colspan = cell.colspan || 1;
-            var width = this.columns[i].width;
-            var flex = this.columns[i].flex;
+        for (var i = 0; i < this.cells.length; i ++) {
+          var cell = this.cells[i];
+          var width = this.columns[i].width;
+          var flex = this.columns[i].flex;
 
-            // Visit colspanned cells to hide them, and increase parent width and flex.
-            for (var j = i + 1; j < i + colspan; j++) {
-              this.cells[j].style.display = 'none';
-
-              width += ' + ' + this.columns[j].width;
-              flex += this.columns[j].flex;
-            }
-
-            cell.style.flexBasis = 'calc(' + width + ')';
-            cell.style.flexGrow = flex;
-            cell.style.display = '';
-          }
+          cell.style.flexBasis = 'calc(' + width + ')';
+          cell.style.flexGrow = flex;
         }
       },
 
@@ -127,15 +114,18 @@
           Polymer.dom(this).innerHTML = '';
 
           var cells = [];
-          var spanning = 0;
+
+          // TODO: should be a cleaner way to do this.
+          var hasGroups = e.value.filter(function(col) {
+            return col.is !== 'vaadin-grid-column';
+          }).length > 0;
 
           e.value.forEach(function(column, columnIndex) {
             var cell = this._createCell();
             cell.index = this.index;
             cell.target = this.target;
+            cell.group = hasGroups;
             cell.column = column;
-
-            this.listen(cell, 'colspan-changed', '_updateCells');
 
             Polymer.dom(this).appendChild(cell);
             cells.push(cell);
@@ -145,6 +135,8 @@
           this.cells = cells;
           this._updateCells();
         } else if (e.path.indexOf('columns.#') === 0) {
+          var index = parseInt(e.path.split('.')[1].substring(1));
+          this.cells[index].notifyPath(e.path.replace('columns.#' + index, 'column'), e.value);
           // TODO: optimize to update only affected cells.
           this._updateCells();
         }
@@ -193,23 +185,6 @@
       }
     };
 
-    var vaadinGridTableRowContainerRowBehavior = {
-
-      properties: {
-        rowIndex: Object
-      },
-
-      observers: [
-        '_rowIndexChanged(columns, target, rowIndex)'
-      ],
-
-      _rowIndexChanged: function() {
-        this.cells.forEach(function(cell) {
-          cell.rowIndex = this.rowIndex;
-        }, this);
-      },
-    };
-
     Polymer({
       is: 'vaadin-grid-table-row',
 
@@ -226,22 +201,19 @@
       is: 'vaadin-grid-table-header-row',
 
       behaviors: [
-        vaadinGridTableRowBehavior,
-        vaadinGridTableRowContainerRowBehavior
+        vaadinGridTableRowBehavior
       ],
 
       _createCell: function() {
         return document.createElement('th', 'vaadin-grid-table-header-cell');
       }
-
     });
 
     Polymer({
       is: 'vaadin-grid-table-footer-row',
 
       behaviors: [
-        vaadinGridTableRowBehavior,
-        vaadinGridTableRowContainerRowBehavior
+        vaadinGridTableRowBehavior
       ],
 
       _createCell: function() {
