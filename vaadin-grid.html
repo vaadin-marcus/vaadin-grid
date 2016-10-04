@@ -87,24 +87,31 @@
     },
 
     _getColumns: function (children) {
-      return [].reduce.call(children, function(array, child) {
+      var result = [].reduce.call(children, function(array, child) {
         if (child.is === 'vaadin-grid-column') {
           array.push(child);
         } else if (child.is === 'vaadin-grid-column-group') {
           var groupColumns = this._getColumns(child.children);
           var groupTemplate = child.querySelector('template[is="header"]');
           groupTemplate.setAttribute('colspan', groupColumns.length);
-          groupColumns.forEach(function(col, index) {
-            var emptyTemplate = document.createElement('template');
-            emptyTemplate.setAttribute('is', 'header');
-            var template = index === 0 ? groupTemplate : emptyTemplate;
-            Polymer.dom(col).insertBefore(template, col.firstChild);
-          });
-
+          Polymer.dom(groupColumns[0]).insertBefore(groupTemplate, groupColumns[0].firstChild);
           array = array.concat(groupColumns);
         }
         return array;
       }.bind(this), []);
+
+      var rows = [].reduce.call(result, function(prev, curr) {
+        return Math.max(prev, curr.querySelectorAll('template[is="header"]').length);
+      }, 0);
+      result.forEach(function(column) {
+        while (column.querySelectorAll('template[is="header"]').length < rows) {
+          var emptyTemplate = document.createElement('template');
+          emptyTemplate.setAttribute('is', 'header');
+          Polymer.dom(column).insertBefore(emptyTemplate, column.firstChild);
+        }
+      });
+
+      return result;
     },
 
     _columnsChanged: function(e) {
