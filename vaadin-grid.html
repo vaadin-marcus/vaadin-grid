@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="vaadin-grid-table.html">
 <link rel="import" href="vaadin-grid-column.html">
+<link rel="import" href="vaadin-grid-column-group.html">
 <link rel="import" href="vaadin-grid-row-details-behavior.html">
 <link rel="import" href="vaadin-grid-data-source-behavior.html">
 <link rel="import" href="vaadin-grid-selection-behavior.html">
@@ -80,8 +81,30 @@
     },
 
     ready: function() {
-      this.columns = Polymer.dom(this).querySelectorAll('vaadin-grid-column');
+      // this.columns = Polymer.dom(this).querySelectorAll('vaadin-grid-column');
+      this.columns = this._getColumns(Polymer.dom(this).children);
       this.rowDetailsTemplate = Polymer.dom(this).querySelector('template[is=row-details]');
+    },
+
+    _getColumns: function (children) {
+      return [].reduce.call(children, function(array, child) {
+        if (child.is === 'vaadin-grid-column') {
+          array.push(child);
+        } else if (child.is === 'vaadin-grid-column-group') {
+          var groupColumns = this._getColumns(child.children);
+          var groupTemplate = child.querySelector('template[is="header"]');
+          groupTemplate.setAttribute('colspan', groupColumns.length);
+          groupColumns.forEach(function(col, index) {
+            var emptyTemplate = document.createElement('template');
+            emptyTemplate.setAttribute('is', 'header');
+            var template = index === 0 ? groupTemplate : emptyTemplate;
+            Polymer.dom(col).insertBefore(template, col.firstChild);
+          });
+
+          array = array.concat(groupColumns);
+        }
+        return array;
+      }.bind(this), []);
     },
 
     _columnsChanged: function(e) {
