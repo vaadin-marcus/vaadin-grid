@@ -87,10 +87,11 @@
     },
 
     _getColumns: function (children) {
+
       var result = [].reduce.call(children, function(array, child) {
-        if (child.is === 'vaadin-grid-column') {
+        if (child.tagName.toLowerCase() === 'vaadin-grid-column') {
           array.push(child);
-        } else if (child.is === 'vaadin-grid-column-group') {
+        } else if (child.tagName.toLowerCase() === 'vaadin-grid-column-group') {
           var groupColumns = this._getColumns(child.children);
           var groupTemplate = child.querySelector('template[is="header"]');
           groupTemplate.setAttribute('colspan', groupColumns.length);
