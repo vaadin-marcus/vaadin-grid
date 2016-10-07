@@ -43,7 +43,7 @@
 
       size: Number,
 
-      frozenColumns: {
+      _frozenColumns: {
         type: Number,
         value: 0
       },
@@ -77,13 +77,13 @@
     },
 
     _isFrozenColumn: function(column) {
-      return this._columns.indexOf(column) < this.frozenColumns;
+      return this._columns.indexOf(column) < this._frozenColumns;
     },
 
     ready: function() {
       // this.columns = Polymer.dom(this).querySelectorAll('vaadin-grid-column');
       this._columns = this._getColumns(Polymer.dom(this).children);
-      this.frozenColumns = this._columns.reduce(function(count, column) {
+      this._frozenColumns = this._columns.reduce(function(count, column) {
         return count + column.hasAttribute('frozen') ? 1 : 0;
       }, 0);
 
