@@ -115,6 +115,11 @@
               flex += this.columns[j].flex;
             }
 
+            if (colspan > 1) {
+              cell.setAttribute('colspan', colspan);
+            } else {
+              cell.removeAttribute('colspan');
+            }
             cell.style.flexBasis = 'calc(' + width + ')';
             cell.style.flexGrow = flex;
             cell.style.display = '';
