@@ -90,7 +90,7 @@
       }
 
       tr:not([hidden]) {
-        display: flex;
+        /*display: flex;*/
         width: 100%;
       }
 
@@ -112,6 +112,10 @@
       }
       tfoot tr:first-child td {
         border-top: 1px solid var(--vaadin-grid-border-color);
+      }
+
+      thead, tfoot {
+        display: inline-table;
       }
 
       td, th {

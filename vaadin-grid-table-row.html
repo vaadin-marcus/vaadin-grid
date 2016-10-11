@@ -134,11 +134,13 @@
                 cell.classList.add('empty');
               } else {
                 cell.template = tpl;
+                Polymer.dom(this).appendChild(cell);
               }
+            } else {
+              Polymer.dom(this).appendChild(cell);
             }
             // TODO: Only cells with templates should be attached
             // But we need a way to size row/colspanned cells using flex layout.
-            Polymer.dom(this).appendChild(cell);
             cells.push(cell);
           }.bind(this));
           this.cells = cells;
