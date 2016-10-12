@@ -33,6 +33,11 @@
           type: String,
           value: ''
         },
+        frozen: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true
+        },
         template: {
           type: Object,
           notify: true,
@@ -42,6 +47,10 @@
         },
         grid: Object
       },
+
+      observers: [
+        '_frozenChanged(grid, frozen)'
+      ],
 
       _colTemplate: function(type) {
         return Polymer.dom(this).children.filter(function(t) {
@@ -62,6 +71,11 @@
 
       _colCount: function() {
         return this._columns().length;
+      },
+
+      _frozenChanged: function(grid, frozen) {
+        var index = grid._columns.indexOf(this);
+        grid.notifyPath('_columns.' + index + '.frozen', frozen);
       }
     };
 

@@ -26,7 +26,7 @@
     }
   </style>
   <template>
-    <vaadin-grid-table loading$=[[loading]] bind-data="[[_bindData]]" size="[[size]]" id="scroller" columns="[[_columns]]" frozen-columns=[[frozenColumns]] content-target=[[_getContentTarget()]] row-details-template=[[rowDetailsTemplate]]>
+    <vaadin-grid-table loading$=[[loading]] bind-data="[[_bindData]]" size="[[size]]" id="scroller" columns="[[_columns]]" content-target=[[_getContentTarget()]] row-details-template=[[rowDetailsTemplate]]>
       <content></content>
     </vaadin-grid-table>
   </template>
@@ -44,11 +44,6 @@
       },
 
       size: Number,
-
-      frozenColumns: {
-        type: Number,
-        value: 0
-      },
 
       rowDetailsTemplate: Object,
 
@@ -76,10 +71,6 @@
 
     _getContentTarget: function() {
       return this;
-    },
-
-    _isFrozenColumn: function(column) {
-      return this._columns.indexOf(column) < this.frozenColumns;
     },
 
     ready: function() {

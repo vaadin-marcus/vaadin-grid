@@ -150,7 +150,8 @@
       },
 
       observers: [
-        '_columnsChanged(columns.*, frozenColumns)'
+        '_columnsChanged(columns.*)',
+        '_frozenColumnsChanged(frozenColumns)'
       ],
 
       _configureRows: function() {
@@ -168,11 +169,23 @@
         }.bind(this));
       },
 
+      _frozenColumnsChanged: function(frozenColumns) {
+        if (this._rows) {
+          this._rows.forEach(function(row) {
+            row.frozenColumns = frozenColumns;
+          }.bind(this));
+        }
+      },
+
       _columnsChanged: function(e) {
         // When a column is modified, all rows should be updated, so there is no way to
         // do partial updates.
-        // TODO: This could be debounced but we need to update some synchronous tests.
-        this._configureMatrix(this.columns);
+        if (/(columns|flex|width)$/.test(e.path)) {
+          // TODO: This could be debounced but we need to update some synchronous tests.
+          // this.debounce('configure-matrix', function() {
+            this._configureMatrix(this.columns);
+          // }.bind(this), 10)
+        }
       },
 
       _rowCount: function(columns) {
