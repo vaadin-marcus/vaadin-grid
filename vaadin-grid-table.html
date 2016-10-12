@@ -233,7 +233,7 @@
     },
 
     _columnsChanged: function(e, physicalItems) {
-      if (e.path === 'columns' || /frozen/.test(e.path)) {
+      if (/(columns|frozen)$/.test(e.path)) {
         this._configureColumns();
       } else if (e.path.indexOf('columns.#' === 0)) {
         physicalItems.forEach(function(row) {
@@ -249,21 +249,23 @@
           return col.tagName.toLowerCase() == 'vaadin-grid-column';
         });
 
-        // Configure frozenColumns
-        // Not helper methods in vaadin-grid-column because columns might not be registered.
-        this.frozenColumns = this.columns.filter(function(col) {
-          // Consider first level elements
-          return !/vaadin-grid-column-group/i.test(Polymer.dom(col).parentNode.tagName);
-        }).reduce(function(prev, curr, idx) {
-          // We only support frozen columns at left.
-          if (idx - prev == 0 && curr.hasAttribute('frozen')) {
-            // We count all children columns of a group
-            return idx + (Polymer.dom(curr).querySelectorAll('vaadin-grid-column').length || 1)
-          }
-          return prev;
-        }, 0);
+        this.debounce('config-frozen', function() {
+          // Configure frozenColumns
+          // Not helper methods in vaadin-grid-column because columns might not be registered.
+          this.frozenColumns = this.columns.filter(function(col) {
+            // Consider first level elements
+            return !/vaadin-grid-column-group/i.test(Polymer.dom(col).parentNode.tagName);
+          }).reduce(function(prev, curr, idx) {
+            // We only support frozen columns at left.
+            if (idx - prev == 0 && curr.hasAttribute('frozen')) {
+              // We count all children columns of a group
+              return idx + (Polymer.dom(curr).querySelectorAll('vaadin-grid-column').length || 1)
+            }
+            return prev;
+          }, 0);
 
-        this._configureItems();
+          this._configureItems();
+        });
     },
 
     _configureItems: function() {

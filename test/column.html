@@ -112,11 +112,13 @@
             expect(grid.$.scroller._physicalItems[0].cells[0].style.flexGrow).to.eql('2');
           });
 
-          it('should be bound to row cells on multiSelection', function() {
+          it('should be bound to row cells on multiSelection', function(done) {
             grid.multiSelection = true;
-            column.flex = 2;
-
-            expect(grid.$.scroller._physicalItems[0].cells[1].style.flexGrow).to.eql('2');
+            flush(function() {
+              column.flex = 2;
+              expect(grid.$.scroller._physicalItems[0].cells[1].style.flexGrow).to.eql('2');
+              done();
+            });
           });
 
           it('should be bound to footer cells', function() {
@@ -151,11 +153,13 @@
             expect(grid.$.scroller._physicalItems[0].cells[0].style.flexBasis).to.eql('200px');
           });
 
-          it('should be bound to row cells on multiSelection', function() {
+          it('should be bound to row cells on multiSelection', function(done) {
             grid.multiSelection = true;
-            column.width = '200px';
-
-            expect(grid.$.scroller._physicalItems[0].cells[1].style.flexBasis).to.eql('200px');
+            flush(function() {
+              column.width = '200px';
+              expect(grid.$.scroller._physicalItems[0].cells[1].style.flexBasis).to.eql('200px');
+              done();
+            });
           });
 
           it('should be bound to footer cells', function() {

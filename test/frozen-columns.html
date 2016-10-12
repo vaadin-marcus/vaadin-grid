@@ -67,13 +67,19 @@
             expect(cells[2].hasAttribute('frozen')).not.to.be.true;
           });
 
-          it('should have the correct last-frozen cell in a row', function() {
+          it('should have the correct last-frozen cell in a row', function(done) {
+            this.timeout(400000)
             scroller.columns[1].frozen = true;
-            containerRows = getRows(containerElement);
-            var cells = getRowCells(containerRows[0]);
-            expect(cells[0].hasAttribute('last-frozen')).not.to.be.true;
-            expect(cells[1].hasAttribute('last-frozen')).to.be.true;
-            expect(cells[2].hasAttribute('last-frozen')).not.to.be.true;
+
+            flush(function() {
+              containerRows = getRows(containerElement);
+              var cells = getRowCells(containerRows[0]);
+
+              expect(cells[0].hasAttribute('last-frozen')).not.to.be.true;
+              expect(cells[1].hasAttribute('last-frozen')).to.be.true;
+              expect(cells[2].hasAttribute('last-frozen')).not.to.be.true;
+              done();
+            })
           });
 
           it('should not move while content scrolls horizontally', function(done) {
@@ -103,33 +109,32 @@
 
             scroller.$.table.addEventListener('scroll', function() {
               expect(cells[0].style.transform).to.eql('translate3d(' + defaultCellWidth + 'px, 0px, 0px)');
-
               scroller.columns[0].frozen = false;
-              cells = getRowCells(getRows(containerElement)[0]);
-              scroller.flushDebouncer('cache-elements');
 
-              expect(cells[0].style.transform).to.be.empty;
-              done();
+              flush(function() {
+                cells = getRowCells(getRows(containerElement)[0]);
+                expect(cells[0].style.transform).to.be.empty;
+                done();
+              });
             });
-            scroller.$.table.scrollLeft = defaultCellWidth;
 
+            scroller.$.table.scrollLeft = defaultCellWidth;
           });
 
           it('should update transforms when frozen columns increase', function(done) {
             var cells = getRowCells(containerRows[0]);
-
             scroller.$.table.addEventListener('scroll', function() {
               expect(cells[1].style.transform).to.eql('');
-
               scroller.columns[1].frozen = true;
-              cells = getRowCells(getRows(containerElement)[0]);
-              scroller.flushDebouncer('cache-elements');
 
-              expect(cells[1].style.transform).to.eql('translate3d(' + defaultCellWidth + 'px, 0px, 0px)');
-              done();
+              flush(function() {
+                cells = getRowCells(getRows(containerElement)[0]);
+                expect(cells[1].style.transform).to.eql('translate3d(' + defaultCellWidth + 'px, 0px, 0px)');
+                done();
+              });
             });
-            scroller.$.table.scrollLeft = defaultCellWidth;
 
+            scroller.$.table.scrollLeft = defaultCellWidth;
           });
         });
       });
