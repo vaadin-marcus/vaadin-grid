@@ -17,13 +17,14 @@
         headerTemplate: {
           type: Object,
           value: function() {
-            return this._findTemplate('template.header');
+            // return Polymer.dom(this).querySelector('.header');
+            return this._findTemplate('.header');
           }
         },
         footerTemplate: {
           type: Object,
           value: function() {
-            return this._findTemplate('template.footer');
+            // return this._findTemplate('template.footer');
           }
         },
         instances: {
@@ -55,10 +56,10 @@
           return el.parentElement === this;
         }.bind(this))[0];
         if (template) {
-          if (this.dataHost) {
-            // set dataHost to the context where template has been defined
-            template._rootDataHost = this.dataHost._rootDataHost || this.dataHost;
-          }
+          // if (this.dataHost) {
+          //   // set dataHost to the context where template has been defined
+          //   template._rootDataHost = this.dataHost._rootDataHost || this.dataHost;
+          // }
           return template;
         }
       },
@@ -87,7 +88,7 @@
     Polymer({
       is: 'vaadin-grid-column',
 
-      behaviors: [vaadinGridColumnBehavior],
+      behaviors: [Polymer.Templatizer, vaadinGridColumnBehavior],
 
       properties: {
         width: {
@@ -103,7 +104,8 @@
         template: {
           type: Object,
           value: function() {
-            return this._findTemplate('template:not(.header):not(.footer)');
+            var t = this._findTemplate('template:not(.header):not(.footer)');
+            return t;
           }
         },
 
@@ -114,13 +116,46 @@
 
       observers: ['_flexChanged(flex)', '_widthChanged(width)', '_templateChanged(template)', '_frozenChanged(frozen)', '_hiddenChanged(hidden)'],
 
+      created: function() {
+        this._instanceProps = {
+          expanded: true,
+          index: true,
+          item: true,
+          selected: true
+        };
+      },
+
+      _forwardInstancePath: function(inst, path, value) {
+        console.log(path, value);
+      },
+
+      _forwardParentProp: function(prop, value) {
+        console.log(prop, value);
+      },
+
       _frozenChanged: function(frozen) {
         this.fire('property-changed', {path: 'frozen', value: frozen});
       },
 
+      ready: function() {
+        this._instanceProps = {
+          expanded: true,
+          index: true,
+          item: true,
+          selected: true
+        };
+        console.log('before templatize', this._parentProps);
+        this.templatize(this.template);
+        console.log('after', this._parentProps);
+        this.foo = function() {
+          return this.stamp(null);
+        }.bind(this);
+        this.fire('property-changed', {path: 'template', value: this.template}, {bubbles: false});
+      },
+
       _templateChanged: function(template) {
         // We bubble false for optimisation
-        this.fire('property-changed', {path: 'template', value: template}, {bubbles: false});
+
       },
 
       _hiddenChanged: function(hidden) {

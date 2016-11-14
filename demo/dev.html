@@ -41,7 +41,7 @@
             height: 100%;
           }
         </style>
-        <vaadin-grid id="component" items="[[items]]" multi-selection>
+        <vaadin-grid id="component" items="[[items]]">
 
           <template class="row-details">
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
@@ -55,27 +55,27 @@
             <template>
               [[index]]
             </template>
-            <template class="header">
+            <div class="header">
               Index
-            </template>
+            </div>
           </vaadin-grid-column>
 
-          <vaadin-grid-column-group>
+          <!-- <vaadin-grid-column-group>
 
             <template class="header">
               TG1
             </template>
             <template class="footer">
-              TGF1
-            </template>
+              <!-- TGF1
+            </template> -->
 
             <vaadin-grid-column width="20%">
               <template>
                 <span class="elItem">[[item.user.name.first]]</span>
               </template>
-              <template class="header">
+              <div class="header">
                 <vaadin-grid-sorter path="user.name.first">TC1</vaadin-grid-sorter>
-              </template>
+              </div>
               <template class="footer">
                 TCF1
               </template>
@@ -83,16 +83,16 @@
 
             <vaadin-grid-column width="20%">
               <template>
-                <paper-input value="{{item.user.name.last}}"></paper-input>
+                <paper-input value="{{item.user.name.first}}"></paper-input>
               </template>
-              <template class="header">
+              <div class="header">
                 TC2
-              </template>
+              </div>
               <template class="footer">
-                <vaadin-grid-filter path="user.name.last"></vaadin-grid-filter>
+                <vaadin-grid-filter path="user.name.first"></vaadin-grid-filter>
               </template>
             </vaadin-grid-column>
-
+<!--
           </vaadin-grid-column-group>
 
           <vaadin-grid-column-group>
@@ -115,9 +115,9 @@
                 </template>
               </vaadin-grid-column>
               <vaadin-grid-column width="100px">
-                <template>
+                <template> -->
                   <!-- <progress value="[[index]]" max="25"></progress> -->
-                </template>
+                <!-- </template>
                 <template class="header">
                   TC5
                 </template>
@@ -136,8 +136,8 @@
             </vaadin-grid-column-group>
             <template class="header">
               TG2
-            </template>
-          </vaadin-grid-column-group>
+            </template> -->
+          <!-- </vaadin-grid-column-group> -->
         </vaadin-grid>
       </template>
       <script>

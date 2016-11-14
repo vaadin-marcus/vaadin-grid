@@ -72,7 +72,7 @@
         this.width = column.width;
         this.hidden = column.hidden;
         this._childColumns = column._childColumns;
-        
+
         // Assigning undefined to element.colSpan will set colSpan attribute to 0
         if (column.colSpan) {
           this.colSpan = column.colSpan;
@@ -88,7 +88,7 @@
       },
 
       _expandedChanged: function(expanded, instance) {
-        instance.notifyPath('expanded', expanded);
+        instance.set('expanded', expanded);
       },
 
       _flexChanged: function(flex) {
@@ -96,7 +96,8 @@
       },
 
       _indexChanged: function(index, instance) {
-        instance.notifyPath('index', index);
+        // instance.set('index', index);
+        instance.index = index;
       },
 
       _itemChanged: function(item, instance) {
@@ -106,7 +107,7 @@
       },
 
       _selectedChanged: function(selected, instance) {
-        instance.notifyPath('selected', selected);
+        instance.set('selected', selected);
       },
 
       _childColumnsChanged: function(childColumns) {
@@ -128,19 +129,22 @@
       },
 
       _templateChanged: function(template, target) {
-        this.templatize(template);
+        // this.templatize(template);
 
         // fix _rootDataHost to the context where template has been defined
-        if (template._rootDataHost) {
-          this._getRootDataHost = function() {
-            return template._rootDataHost;
-          };
-        }
+        // if (template._rootDataHost) {
+        //   this._getRootDataHost = function() {
+        //     return template._rootDataHost;
+        //   };
+        // }
 
         // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
-        this._parentProps = this._parentProps || {};
+        // this._parentProps = this._parentProps || {};
+        if (template.localName !== 'template') {
+          return;
+        }
 
-        this.instance = this.stamp(null);
+        this.instance = this.column.stamp(null);
         template.instances = template.instances || [];
         this._templateInstances = template.instances;
         template.instances.push(this.instance);
@@ -185,53 +189,53 @@
         Polymer.dom(this._cellContent).appendChild(this.instance.root);
       },
 
-      _forwardInstanceProp: function(inst, prop, value) {
-        // fire notification event only when a prop is changed through a user-action.
-        // e.g. 'expanded' is different from the originally bound '__expanded__' value.
-        if (this.parentElement &&
-          this.parentElement['__' + prop + '__'] !== undefined &&
-          this.parentElement['__' + prop + '__'] !== value) {
+      // _forwardInstanceProp: function(inst, prop, value) {
+      //   // fire notification event only when a prop is changed through a user-action.
+      //   // e.g. 'expanded' is different from the originally bound '__expanded__' value.
+      //   if (this.parentElement &&
+      //     this.parentElement['__' + prop + '__'] !== undefined &&
+      //     this.parentElement['__' + prop + '__'] !== value) {
+      //
+      //     this.fire('template-instance-changed', {
+      //       prop: prop,
+      //       value: value,
+      //       inst: inst
+      //     });
+      //   }
+      // },
 
-          this.fire('template-instance-changed', {
-            prop: prop,
-            value: value,
-            inst: inst
-          });
-        }
-      },
-
-      _forwardInstancePath: function(inst, path, value) {
-        // TODO: assuming we're currently just listening to [[item.xxxx]] properties
-        // which affect only cells on the current row.
-        if (path.indexOf('item.') === 0) {
-          this.parentElement.iterateCells(function(cell) {
-            if (cell.instance) {
-              cell.instance.notifyPath(path, value);
-            }
-          });
-
-          // instance.notifyPath above will call _forwardInstancePath recursively,
-          // so need to debounce to avoid firing the same event multiple times.
-          this.parentElement.debounce('item-changed', function() {
-            // stripping 'item.' from path.
-            this.parentElement.fire('item-changed', {
-              item: inst.item,
-              path: path.substring(5),
-              value: value
-            });
-          }.bind(this));
-        }
-      },
-
-      _forwardParentProp: function(prop, value) {
-        // _forwardParentProp might be called during this.stamp() before
-        // this.instance is set. We need to delay it until instance is set.
-        this.set('_forwardedParentProps.' + prop, value);
-      },
-
-      _forwardParentPath: function(path, value) {
-        this.set('_forwardedParentProps.' + path, value);
-      },
+      // _forwardInstancePath: function(inst, path, value) {
+      //   // TODO: assuming we're currently just listening to [[item.xxxx]] properties
+      //   // which affect only cells on the current row.
+      //   if (path.indexOf('item.') === 0) {
+      //     this.parentElement.iterateCells(function(cell) {
+      //       if (cell.instance) {
+      //         cell.instance.notifyPath(path, value);
+      //       }
+      //     });
+      //
+      //     // instance.notifyPath above will call _forwardInstancePath recursively,
+      //     // so need to debounce to avoid firing the same event multiple times.
+      //     this.parentElement.debounce('item-changed', function() {
+      //       // stripping 'item.' from path.
+      //       this.parentElement.fire('item-changed', {
+      //         item: inst.item,
+      //         path: path.substring(5),
+      //         value: value
+      //       });
+      //     }.bind(this));
+      //   }
+      // },
+      //
+      // _forwardParentProp: function(prop, value) {
+      //   // _forwardParentProp might be called during this.stamp() before
+      //   // this.instance is set. We need to delay it until instance is set.
+      //   this.set('_forwardedParentProps.' + prop, value);
+      // },
+      //
+      // _forwardParentPath: function(path, value) {
+      //   this.set('_forwardedParentProps.' + path, value);
+      // },
 
       _forwardedParentPropsChanged: function(parentProps) {
         if (parentProps.path !== '_forwardedParentProps') {
@@ -239,7 +243,8 @@
           var value = parentProps.value;
 
           this._templateInstances.forEach(function(inst) {
-            inst.notifyPath(prop, value);
+            // inst.notifyPath(prop, value);
+            inst[prop] = value;
           });
         }
       }
@@ -283,9 +288,9 @@
 
       observers: ['_headerTemplateChanged(headerTemplate, target)'],
 
-      _headerTemplateChanged: function(headerTemplate, target) {
+      _headerTemplateChanged: function(headerTemplate, target, column) {
         if (this._isColumnRow || this.column.localName === 'vaadin-grid-column-group') {
-          this._templateChanged(headerTemplate, target);
+          this._templateChanged(headerTemplate, target, column);
         }
       }
     });
@@ -306,9 +311,9 @@
 
       observers: ['_footerTemplateChanged(footerTemplate, target)'],
 
-      _footerTemplateChanged: function(footerTemplate, target) {
+      _footerTemplateChanged: function(footerTemplate, target, column) {
         if (this._isColumnRow || this.column.localName === 'vaadin-grid-column-group') {
-          this._templateChanged(footerTemplate, target);
+          this._templateChanged(footerTemplate, target, column);
         }
       }
     });
