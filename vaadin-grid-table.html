@@ -11,7 +11,9 @@
 <link rel="import" href="vaadin-grid-row-details-behavior.html">
 <link rel="import" href="vaadin-grid-data-source-behavior.html">
 <link rel="import" href="vaadin-grid-selection-behavior.html">
+<link rel="import" href="vaadin-grid-theme.html">
 <link rel="import" href="iron-list-behavior.html">
+
 
 <dom-module id="vaadin-grid-table">
   <template>
@@ -97,17 +99,11 @@
       th::content > .cell-content,
       /* Selector for shadow */
       ::content > .cell-content {
-         padding: 8px;
          width: 100%;
-         box-sizing: border-box;
-         display: flex;
+         display: inline-flex;
          justify-content: center;
          flex-direction: column;
          white-space: nowrap;
-       }
-
-      tr:hover td {
-        /*background-color: lightgrey;*/
       }
 
       tr:not([hidden]) {
@@ -135,36 +131,9 @@
       ::content > vaadin-grid-column-group {
         display: none;
       }
-
-      /* Theme styles */
-      :host {
-        box-sizing: border-box;
-        border: 1px solid var(--vaadin-grid-border-color);
-      }
-
-      thead[has-templates] tr:last-child th {
-        border-bottom: 1px solid var(--vaadin-grid-border-color);
-      }
-
-      tfoot[has-templates] tr:first-child td {
-        border-top: 1px solid var(--vaadin-grid-border-color);
-      }
-
-      tbody tr td {
-        border-bottom: 1px solid var(--vaadin-grid-border-color);
-      }
-
-      td, th {
-        text-align: left;
-      }
-
-      tr[odd] td {
-      }
-
-      [last-frozen] {
-        border-right: 1px solid var(--vaadin-grid-border-color);
-      }
     </style>
+    <style include="vaadin-grid-theme-styles"></style>
+
     <content select="vaadin-grid-column, vaadin-grid-column-group"></content>
     <div id="spinner"></div>
     <table id="table" class="table table-striped" overflow-hidden$="[[_hideTableOverflow(scrollbarWidth, safari)]]">

@@ -1,0 +1,56 @@
+<dom-module id="vaadin-grid-theme-styles">
+  <template>
+    <style>
+
+    /* Default borders */
+    :host {
+      box-sizing: border-box;
+      border: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
+    }
+
+    thead[has-templates] tr:last-child th {
+      border-bottom: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
+    }
+
+    tfoot[has-templates] tr:first-child td {
+      border-top: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
+    }
+
+    tbody tr td {
+      border-bottom: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
+    }
+
+    [last-frozen] {
+      border-right: var(--vaadin-grid-border, rgba(0, 0, 0, 0.08));
+    }
+
+    td, th {
+      text-align: left;
+    }
+
+    /* Cell content wrappers */
+
+    /* Selector for non-shadow */
+    td::content > .cell-content,
+    th::content > .cell-content,
+    /* Selector for shadow */
+    ::content > .cell-content {
+      line-height: 2;
+    }
+
+    /* Cells */
+
+    tr[odd] td {
+
+    }
+
+
+
+    :host(:not([scrolling])) tbody tr:hover td {
+      @apply(--vaadin-grid-row-hover-cell);
+    }
+
+
+    </style>
+  </template>
+</dom-module>
