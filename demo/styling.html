@@ -11,6 +11,7 @@
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
   <link rel="import" href="common.html">
+
 </head>
 
 <body unresolved>
@@ -94,6 +95,22 @@
                 width: 100%;
                 box-sizing: border-box;
               }
+
+              vaadin-grid-sorter .sort-indicator {
+                opacity: 0.2;
+                transition: all 0.5s;
+                user-select: none;
+                transform: rotateZ(180deg);
+              }
+
+              vaadin-grid-sorter[direction] .sort-indicator {
+                opacity: 1;
+              }
+
+              vaadin-grid-sorter[direction=desc] .sort-indicator {
+                transform: rotateZ(0);
+              }
+
             </style>
 
             <x-array-data-source items="{{items}}"></x-array-data-source>
@@ -124,8 +141,8 @@
 
                 <vaadin-grid-column-group>
                   <template class="header">
-                    <vaadin-grid-sorter path="user.name.first">
-                      First Name
+                    <vaadin-grid-sorter path="user.name.first" hide-indicators>
+                      First Name<div class="sort-indicator">⬆</div>
                     </vaadin-grid-sorter>
                   </template>
 
@@ -136,8 +153,8 @@
 
                 <vaadin-grid-column-group>
                   <template class="header">
-                    <vaadin-grid-sorter path="user.name.last">
-                      Last Name
+                    <vaadin-grid-sorter path="user.name.last" hide-indicators>
+                      Last Name<div class="sort-indicator">⬆</div>
                     </vaadin-grid-sorter>
                   </template>
                   <vaadin-grid-column width="200px" flex="0">

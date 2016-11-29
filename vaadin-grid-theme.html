@@ -27,7 +27,8 @@
 
     /* Cells */
 
-    td, th {
+    td,
+    th {
       text-align: left;
       padding: 4px 8px;
       line-height: 2;
@@ -42,7 +43,11 @@
       @apply(--vaadin-grid-footer-cell);
     }
 
-    tr[odd] td {
+    tbody td {
+      @apply(--vaadin-grid-body-cell);
+    }
+
+    tbody tr[odd] td {
       @apply(--vaadin-grid-row-odd-cell);
     }
 
@@ -51,5 +56,8 @@
     }
 
     </style>
+    <style include="vaadin-grid-data-source-theme-styles"></style>
+    <style include="vaadin-grid-selection-theme-styles"></style>
+    <style include="vaadin-grid-row-details-theme-styles"></style>
   </template>
 </dom-module>

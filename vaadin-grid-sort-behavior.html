@@ -32,7 +32,7 @@
     </style>
 
     <content></content>
-    <div id="indicators" direction$="[[direction]]">
+    <div id="indicators" direction$="[[direction]]" hidden="[[hideIndicators]]">
       <div id="direction">▲</div>
       <div id="order">[[_getDisplayOrder(_order)]]</div>
     </div>
@@ -53,7 +53,9 @@
           value: null
         },
 
-        _order: Number
+        _order: Number,
+
+        hideIndicators: Boolean
 
       },
 

@@ -1,6 +1,22 @@
 <dom-module id="vaadin-grid-data-source-styles">
   <template>
     <style>
+      :host(:not([has-data])) tbody tr::after {
+        visibility: hidden;
+        content: '-';
+        width: 0;
+
+         /* Must use the same padding (+border-top) as the cell wrapper itself.
+         FIXME: Use the vertical paddings on the cell directly (not the wrapper).
+         Then this could be removed.*/
+        padding: 9px 0 8px;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="vaadin-grid-data-source-theme-styles">
+  <template>
+    <style>
       :host([loading]) #items tr {
         opacity: 0.1;
       }
@@ -38,17 +54,6 @@
         opacity: 1;
         -webkit-animation: vaadin-grid-spin-360 400ms linear infinite;
         animation: vaadin-grid-spin-360 400ms linear infinite;
-      }
-
-      :host(:not([has-data])) tbody tr::after {
-        visibility: hidden;
-        content: '-';
-        width: 0;
-
-         /* Must use the same padding (+border-top) as the cell wrapper itself.
-         FIXME: Use the vertical paddings on the cell directly (not the wrapper).
-         Then this could be removed.*/
-        padding: 9px 0 8px;
       }
     </style>
   </template>
