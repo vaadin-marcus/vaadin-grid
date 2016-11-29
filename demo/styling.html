@@ -27,34 +27,249 @@
     <h3>Styling</h3>
     <demo-snippet>
       <template>
-        <template is="dom-bind">
-          <style is="custom-style">
-            .custom-theme {
-              --vaadin-grid-border: 2px solid red;
-              --vaadin-grid-row-hover-cell: {
-                background: blue;
-                cursor: pointer;
+        <basic-styling></basic-styling>
+        <dom-module id="basic-styling">
+          <template>
+            <style>
+              :host {
+                display: block;
               }
-            }
 
-            .lastname {
-              background: yellow;
-              cursor: default;
-            }
-          </style>
-          <x-data-source data-source="{{dataSource}}"></x-data-source>
-          <vaadin-grid data-source="[[dataSource]]" size="200" class="custom-theme">
+              vaadin-grid {
+                font: 300 16px/1.55 "Open Sans", sans-serif;
+                -webkit-font-smoothing: antialiased;
+
+                --vaadin-grid-border: 1px solid #d4d4d4;
+                --vaadin-grid-cell-last-frozen: {
+                  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+                  border-right: none;
+                }
+              }
+
+              vaadin-grid .cell {
+                padding: 0 18px;
+                line-height: 38px;
+                min-height: 38px;
+                border-right: 1px solid #d4d4d4;
+                box-sizing: border-box;
+              }
+
+              vaadin-grid .headercell,
+              vaadin-grid .footercell {
+                background-image: linear-gradient(to bottom,#fafafa 2%, #efefef 98%);
+              }
+
+              vaadin-grid .headercell.grouptitle {
+                text-align: center;
+                font-weight: bold;
+              }
+
+              vaadin-grid .headercell.groupcell {
+                border-bottom: 1px solid #d4d4d4;
+              }
+
+              vaadin-grid [data-stripe] {
+                background-color: #f5f5f5;
+              }
+
+              vaadin-grid .cell[selected] {
+                background-image: linear-gradient(to bottom,#1b87e3 2%, #166ed5 98%);
+                color: #c8dbed;
+                text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+                border-color: #1d69b4;
+              }
+
+              vaadin-grid-filter {
+                height: 100%;
+                padding: 5px !important;
+              }
+
+              input {
+                width: 100%;
+                box-sizing: border-box;
+              }
+            </style>
+
+            <x-array-data-source items="{{items}}"></x-array-data-source>
+            <vaadin-grid items="[[items]]" size="200" on-cell-click="_cellClick" selected-items="[[selected]]">
+
+              <vaadin-grid-column-group>
+                <template class="header">
+                  <div class="cell headercell groupcell"></div>
+                </template>
+
+                <vaadin-grid-column-group>
+
+                  <vaadin-grid-column-group>
+                    <template class="header">
+                      <div class="cell headercell groupcell">Username</div>
+                    </template>
+
+                    <vaadin-grid-column width="150px" flex="0" frozen>
+                      <template class="header">
+                        <vaadin-grid-filter class="cell headercell" path="user.username">
+                          <input placeholder="Filter">
+                        </vaadin-grid-filter>
+                      </template>
+                      <template>
+                        <div class="cell" selected$="[[selected]]" data-stripe$="[[_isStriped(index)]]">[[item.user.username]]</div>
+                      </template>
+                      <template class="footer">
+                        <div class="cell footercell"></div>
+                      </template>
+                    </vaadin-grid-column>
+                  </vaadin-grid-column-group>
+                </vaadin-grid-column-group>
+              </vaadin-grid-column-group>
+
+              <vaadin-grid-column-group>
+                <template class="header">
+                  <div class="cell headercell grouptitle groupcell">Name</div>
+                </template>
+                <vaadin-grid-column-group>
+
+                  <vaadin-grid-column-group>
+                    <template class="header">
+                      <vaadin-grid-sorter path="user.name.first" class="cell headercell groupcell">
+                        First Name
+                      </vaadin-grid-sorter>
+                    </template>
+
+                    <vaadin-grid-column width="200px" flex="0">
+                      <template class="header">
+                        <div class="cell headercell"></div>
+                      </template>
+                      <template>
+                        <div class="cell" selected$="[[selected]]" data-stripe$="[[_isStriped(index)]]">[[item.user.name.first]]</div>
+                      </template>
+                      <template class="footer">
+                        <div class="cell footercell"></div>
+                      </template>
+                    </vaadin-grid-column>
+                  </vaadin-grid-column-group>
+
+                  <vaadin-grid-column-group>
+                    <template class="header">
+                      <vaadin-grid-sorter path="user.name.last" class="cell headercell groupcell">
+                        Last Name
+                      </vaadin-grid-sorter>
+                    </template>
+                    <vaadin-grid-column width="200px" flex="0">
+                      <template class="header">
+                        <div class="cell headercell"></div>
+                      </template>
+                      <template>
+                        <div class="cell" selected$="[[selected]]" data-stripe$="[[_isStriped(index)]]">[[item.user.name.last]]</div>
+                      </template>
+                      <template class="footer">
+                        <div class="cell footercell"></div>
+                      </template>
+                    </vaadin-grid-column>
+                  </vaadin-grid-column-group>
+
+                </vaadin-grid-column-group>
+              </vaadin-grid-column-group>
+
+              <vaadin-grid-column-group>
+                <template class="header">
+                  <div class="cell headercell grouptitle groupcell">Location</div>
+                </template>
+                <vaadin-grid-column-group>
+
+                  <vaadin-grid-column-group>
+                    <template class="header">
+                      <div class="cell headercell groupcell">City</div>
+                    </template>
+
+                    <vaadin-grid-column width="200px" flex="0">
+                      <template class="header">
+                        <div class="cell headercell"></div>
+                      </template>
+                      <template>
+                        <div class="cell" selected$="[[selected]]" data-stripe$="[[_isStriped(index)]]">[[item.user.name.first]]</div>
+                      </template>
+                      <template class="footer">
+                        <div class="cell footercell"></div>
+                      </template>
+                    </vaadin-grid-column>
+                  </vaadin-grid-column-group>
+
+                  <vaadin-grid-column-group>
+                    <template class="header">
+                      <div class="cell headercell groupcell">State</div>
+                    </template>
+                    <vaadin-grid-column width="200px" flex="0">
+                      <template class="header">
+                        <div class="cell headercell"></div>
+                      </template>
+                      <template>
+                        <div class="cell" selected$="[[selected]]" data-stripe$="[[_isStriped(index)]]">[[item.user.name.last]]</div>
+                      </template>
+                      <template class="footer">
+                        <div class="cell footercell"></div>
+                      </template>
+                    </vaadin-grid-column>
+                  </vaadin-grid-column-group>
+
+                </vaadin-grid-column-group>
+              </vaadin-grid-column-group>
+
+            </vaadin-grid>
+          </template>
+          <script>
+            Polymer({
+              is: 'basic-styling',
+
+              properties: {
+
+                selected: Array
+
+              },
+
+              _isStriped: function(index) {
+                return index % 2 === 1;
+              },
+
+              _cellClick: function(e) {
+                var item = e.detail.model.item;
+                if (this.selected && this.selected[0] === item) {
+                  this.selected = [];
+                } else {
+                  this.selected = [e.detail.model.item];
+                }
+              }
+            });
+          </script>
+        </dom-module>
+
+      </template>
+    </demo-snippet>
+
+    <h3>Filtering</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind">
+          <x-array-data-source items="{{items}}"></x-array-data-source>
+          <vaadin-grid items="[[items]]">
             <vaadin-grid-column width="50px">
               <template class="header">#</template>
               <template>[[index]]</template>
             </vaadin-grid-column>
             <vaadin-grid-column>
-              <template class="header">First Name</template>
+              <template class="header">
+                <vaadin-grid-filter path="user.name.first">
+                  <input placeholder="First Name">
+                </vaadin-grid-filter>
+              </template>
               <template>[[item.user.name.first]]</template>
             </vaadin-grid-column>
             <vaadin-grid-column>
-              <template class="header">Last Name</template>
-              <template><div class="lastname">[[item.user.name.last]]</div></template>
+              <template class="header">
+                <vaadin-grid-filter path="user.name.last">
+                  <input placeholder="Last Name">
+                </vaadin-grid-filter>
+              </template>
+              <template>[[item.user.name.last]]</template>
             </vaadin-grid-column>
           </vaadin-grid>
         </template>
