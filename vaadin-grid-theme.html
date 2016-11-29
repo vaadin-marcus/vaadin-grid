@@ -16,7 +16,7 @@
       border-top: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
-    tbody tr td {
+    tbody tr:not([lastrow]) td {
       border-bottom: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
@@ -58,6 +58,16 @@
       @apply(--vaadin-grid-body-row-hover-cell);
     }
 
+    table td[lastcolumn],
+    table th[lastcolumn] {
+      /*
+        Some might want to set border-right to each cell (with  --vaadin-grid-cell for example)
+        to add column dividers. This rule is there to cancel the right border
+        for the right-most cell that's often the most desired outcome.
+        To override this rule, developer can enforce the borders with !important.
+      */
+      border-right: none;
+    }
 
     </style>
     <style include="vaadin-grid-data-source-theme-styles"></style>

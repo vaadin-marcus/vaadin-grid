@@ -337,6 +337,8 @@
         }
         el.index = vidx + this._vidxOffset;
         this._virtualIndexToItem[el.index] = el;
+        el.toggleAttribute('odd', el.index % 2);
+        el.toggleAttribute('lastrow', el.index === this.size - 1);
         el.toggleAttribute('hidden', el.index >= this.size);
         this.bindData(el.index, el);
       }, itemSet);
