@@ -25,32 +25,30 @@
       @apply(--vaadin-grid-cell-last-frozen);
     }
 
-    td, th {
-      text-align: left;
-    }
-
-    /* Cell content wrappers */
-
-    /* Selector for non-shadow */
-    td::content > .cell-content,
-    th::content > .cell-content,
-    /* Selector for shadow */
-    ::content > .cell-content {
-      line-height: 2;
-    }
-
     /* Cells */
 
-    tr[odd] td {
-
+    td, th {
+      text-align: left;
+      padding: 4px 8px;
+      line-height: 2;
+      @apply(--vaadin-grid-cell);
     }
 
+    thead th {
+      @apply(--vaadin-grid-header-cell);
+    }
 
+    tfoot td {
+      @apply(--vaadin-grid-footer-cell);
+    }
+
+    tr[odd] td {
+      @apply(--vaadin-grid-row-odd-cell);
+    }
 
     :host(:not([scrolling])) tbody tr:hover td {
       @apply(--vaadin-grid-row-hover-cell);
     }
-
 
     </style>
   </template>
