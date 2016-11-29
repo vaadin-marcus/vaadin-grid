@@ -22,7 +22,6 @@
 
     [last-frozen] {
       border-right: var(--vaadin-grid-border, rgba(0, 0, 0, 0.08));
-      @apply(--vaadin-grid-cell-last-frozen);
     }
 
     /* Cells */
@@ -33,6 +32,10 @@
       padding: 4px 8px;
       line-height: 2;
       @apply(--vaadin-grid-cell);
+    }
+
+    [last-frozen] {
+      @apply(--vaadin-grid-cell-last-frozen);
     }
 
     thead th {
@@ -48,12 +51,13 @@
     }
 
     tbody tr[odd] td {
-      @apply(--vaadin-grid-row-odd-cell);
+      @apply(--vaadin-grid-body-row-odd-cell);
     }
 
     :host(:not([scrolling])) tbody tr:hover td {
-      @apply(--vaadin-grid-row-hover-cell);
+      @apply(--vaadin-grid-body-row-hover-cell);
     }
+
 
     </style>
     <style include="vaadin-grid-data-source-theme-styles"></style>
