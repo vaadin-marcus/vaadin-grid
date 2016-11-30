@@ -116,9 +116,9 @@
             <x-array-data-source items="{{items}}"></x-array-data-source>
             <vaadin-grid id="grid" items="[[items]]" size="200" on-cell-click="_cellClick">
 
-              <vaadin-grid-column-group>
+              <vaadin-grid-column-group frozen>
 
-                <vaadin-grid-column-group>
+                <vaadin-grid-column-group frozen>
                   <template class="header">Username</template>
 
                   <vaadin-grid-column width="150px" flex="0" frozen>
@@ -364,6 +364,7 @@
               vaadin-grid {
                 font: 300 14px "Open Sans", sans-serif;
                 color: rgb(222, 230, 233);
+                background: transparent;
 
                 --vaadin-grid-border: none;
 
