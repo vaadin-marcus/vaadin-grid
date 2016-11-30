@@ -83,22 +83,18 @@
         padding: 0;
         flex-shrink: 0;
         flex-grow: 1;
-        flex-basis: 100px;
         box-sizing: border-box;
         display: flex;
-        overflow: hidden !important;
       }
 
-      /* Selector for non-shadow */
-      td::content > .cell-content,
-      th::content > .cell-content,
-      /* Selector for shadow */
-      ::content > .cell-content {
+      td ::content > .cell-content,
+      th ::content > .cell-content {
          width: 100%;
          display: inline-flex;
          justify-content: center;
          flex-direction: column;
          white-space: nowrap;
+         overflow: hidden !important;
       }
 
       tr:not([hidden]) {

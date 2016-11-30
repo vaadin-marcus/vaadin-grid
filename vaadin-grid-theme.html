@@ -8,19 +8,19 @@
       border: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
-    thead[has-templates] tr:last-child th {
+    thead[has-templates] tr:last-child th ::content > .cell-content {
       border-bottom: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
-    tfoot[has-templates] tr:first-child td {
+    tfoot[has-templates] tr:first-child td ::content > .cell-content {
       border-top: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
-    tbody tr:not([lastrow]) td {
+    tbody tr:not([lastrow]) td ::content > .cell-content {
       border-bottom: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
-    [last-frozen] {
+    [last-frozen] ::content > .cell-content {
       border-right: var(--vaadin-grid-border, 1px solid rgba(0, 0, 0, 0.08));
     }
 
@@ -31,8 +31,8 @@
       background: var(--vaadin-grid-cell-background, #fff);
     }
 
-    td ::content .cell-content,
-    th ::content .cell-content {
+    td ::content > .cell-content,
+    th ::content > .cell-content {
       background: #fff;
       text-align: left;
       padding: 4px 8px;
@@ -40,34 +40,34 @@
       @apply(--vaadin-grid-cell);
     }
 
-    [last-frozen] ::content .cell-content {
+    [last-frozen] ::content > .cell-content {
       @apply(--vaadin-grid-cell-last-frozen);
     }
 
-    thead th ::content .cell-content {
+    thead th ::content > .cell-content {
       font-weight: 500;
       @apply(--vaadin-grid-header-cell);
     }
 
-    tfoot td ::content .cell-content {
+    tfoot td ::content > .cell-content {
       font-weight: 500;
       @apply(--vaadin-grid-footer-cell);
     }
 
-    tbody td ::content .cell-content {
+    tbody td ::content > .cell-content {
       @apply(--vaadin-grid-body-cell);
     }
 
-    tbody tr[odd] td ::content .cell-content {
+    tbody tr[odd] td ::content > .cell-content {
       @apply(--vaadin-grid-body-row-odd-cell);
     }
 
-    :host(:not([scrolling])) tbody tr:hover td ::content .cell-content {
+    :host(:not([scrolling])) tbody tr:hover td ::content > .cell-content {
       @apply(--vaadin-grid-body-row-hover-cell);
     }
 
-    table td[lastcolumn] ::content .cell-content,
-    table th[lastcolumn] ::content .cell-content {
+    table td[lastcolumn] ::content > .cell-content,
+    table th[lastcolumn] ::content > .cell-content {
       /*
         Some might want to set border-right to each cell (with  --vaadin-grid-cell for example)
         to add column dividers. This rule is there to cancel the right border
