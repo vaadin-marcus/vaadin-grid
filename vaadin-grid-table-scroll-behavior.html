@@ -190,8 +190,7 @@
     },
 
     _translateStationaryElements: function() {
-      this.$.header.style.transform = this._getTranslate3d(0, this._scrollTop - 1);
-      this.$.footer.style.transform = this._getTranslate3d(0, this._scrollTop);
+      this.$.footer.style.transform = this.$.header.style.transform = this._getTranslate3d(0, this._scrollTop);
 
       var frozenCellTransform = this._getTranslate3d(this._scrollLeft, 0);
       for (var i = 0; i < this._frozenCells.length; i++) {
