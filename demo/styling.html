@@ -251,13 +251,21 @@
                 }
 
                 --vaadin-grid-body-row-selected-cell: {
-                  background: rgb(131, 183, 236);
+                  background-color: rgb(131, 183, 236);
                   color: #fff;
                   border-bottom-color: rgb(108, 160, 218);
                 }
 
                 --vaadin-grid-body-row-odd-cell: {
                   background-color: rgb(251, 252, 254);
+                }
+
+                --vaadin-grid-body-row-hover-cell: {
+                  background-color: rgb(235, 238, 246);
+                }
+
+                --vaadin-grid-body-row-details-cell: {
+                  text-align: center;
                 }
 
               }
@@ -300,7 +308,11 @@
             </style>
 
             <x-array-data-source items="{{items}}"></x-array-data-source>
-            <vaadin-grid id="grid" items="[[items]]" size="200">
+            <vaadin-grid id="grid" items="[[items]]" size="200" on-cell-click="_cellClick">
+              <template class="row-details">
+                <h1>Hi, I'm [[item.user.name.first]]</h1>
+              </template>
+
               <vaadin-grid-column-group>
                 <template class="header">
                   <div class="header-content">
@@ -358,7 +370,16 @@
           HTMLImports.whenReady(function() {
             Polymer.Base.async(function() {
               Polymer({
-                is: 'basic-styling-two'
+                is: 'basic-styling-two',
+
+                _cellClick: function(e) {
+                  var item = e.detail.model.item;
+                  if (this.$.grid.expandedItems.indexOf(item) > -1) {
+                    this.$.grid.collapseItem(item);
+                  } else {
+                    this.$.grid.expandItem(item);
+                  }
+                }
               });
             },1);
           });

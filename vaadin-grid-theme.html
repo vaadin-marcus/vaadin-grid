@@ -22,8 +22,9 @@
 
     /* Cells */
 
-    td ::content > .cell-content,
-    th ::content > .cell-content {
+    tbody td:not([detailscell]) ::content > .cell-content,
+    thead th ::content > .cell-content,
+    tfoot td ::content > .cell-content  {
       background: #fff;
       text-align: left;
       padding: 4px 8px;
@@ -45,15 +46,15 @@
       @apply(--vaadin-grid-footer-cell);
     }
 
-    tbody td ::content > .cell-content {
+    tbody td:not([detailscell]) ::content > .cell-content {
       @apply(--vaadin-grid-body-cell);
     }
 
-    tbody tr[odd] td ::content > .cell-content {
+    tbody tr[odd] td:not([detailscell]) ::content > .cell-content {
       @apply(--vaadin-grid-body-row-odd-cell);
     }
 
-    :host(:not([scrolling])) tbody tr:hover td ::content > .cell-content {
+    :host(:not([scrolling])) tbody tr:hover td:not([detailscell]) ::content > .cell-content {
       @apply(--vaadin-grid-body-row-hover-cell);
     }
 
