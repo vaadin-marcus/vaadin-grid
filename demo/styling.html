@@ -350,6 +350,92 @@
       </template>
     </demo-snippet>
 
+    <h3>Styling 3</h3>
+    <demo-snippet>
+      <template>
+        <basic-styling-three style="background: rgb(80, 91, 102); padding: 16px;"></basic-styling-three>
+        <dom-module id="basic-styling-three">
+          <template>
+            <style>
+              :host {
+                display: block;
+              }
+
+              vaadin-grid {
+                font: 300 14px "Open Sans", sans-serif;
+                color: rgb(222, 230, 233);
+
+                --vaadin-grid-border: none;
+
+                --vaadin-grid-cell: {
+                  background: rgb(80, 91, 102);
+                }
+
+                --vaadin-grid-body-cell: {
+                  padding: 0;
+                  padding-bottom: 10px;
+                }
+
+                --vaadin-grid-header-cell: {
+                  text-transform: uppercase;
+                  padding: 0 15px;
+                }
+
+              }
+
+              .bodycell {
+                padding: 15px;
+                background: rgb(90, 103, 116);
+                border-top: 1px solid rgb(105, 118, 132);
+                border-bottom: 1px solid rgb(105, 118, 132);
+              }
+
+              .left {
+                border-left: 1px solid rgb(105, 118, 132);
+                border-radius: 3px;
+              }
+
+              .right {
+                border-right: 1px solid rgb(105, 118, 132);
+                border-radius: 3px;
+              }
+
+            </style>
+
+            <x-array-data-source items="{{items}}"></x-array-data-source>
+            <vaadin-grid id="grid" items="[[items]]" size="200">
+
+              <vaadin-grid-column>
+                <template class="header">Name</template>
+                <template><div class="bodycell left">[[item.user.name.first]]</div></template>
+              </vaadin-grid-column>
+
+              <vaadin-grid-column>
+                <template class="header">Email</template>
+                <template><div class="bodycell">[[item.user.email]]</div></template>
+              </vaadin-grid-column>
+
+              <vaadin-grid-column>
+                <template class="header">City</template>
+                <template><div class="bodycell">[[item.user.location.city]]</div></template>
+              </vaadin-grid-column>
+
+              <vaadin-grid-column>
+                <template class="header">State</template>
+                <template><div class="bodycell right">[[item.user.location.state]]</div></template>
+              </vaadin-grid-column>
+
+            </vaadin-grid>
+          </template>
+          <script>
+            Polymer({
+              is: 'basic-styling-three'
+            });
+          </script>
+        </dom-module>
+
+      </template>
+    </demo-snippet>
 
   </div>
 </body>
