@@ -28,6 +28,11 @@
 
     td,
     th {
+      background: var(--vaadin-grid-cell-background, #fff);
+    }
+
+    td ::content .cell-content,
+    th ::content .cell-content {
       background: #fff;
       text-align: left;
       padding: 4px 8px;
@@ -35,34 +40,34 @@
       @apply(--vaadin-grid-cell);
     }
 
-    [last-frozen] {
+    [last-frozen] ::content .cell-content {
       @apply(--vaadin-grid-cell-last-frozen);
     }
 
-    thead th {
+    thead th ::content .cell-content {
       font-weight: 500;
       @apply(--vaadin-grid-header-cell);
     }
 
-    tfoot td {
+    tfoot td ::content .cell-content {
       font-weight: 500;
       @apply(--vaadin-grid-footer-cell);
     }
 
-    tbody td {
+    tbody td ::content .cell-content {
       @apply(--vaadin-grid-body-cell);
     }
 
-    tbody tr[odd] td {
+    tbody tr[odd] td ::content .cell-content {
       @apply(--vaadin-grid-body-row-odd-cell);
     }
 
-    :host(:not([scrolling])) tbody tr:hover td {
+    :host(:not([scrolling])) tbody tr:hover td ::content .cell-content {
       @apply(--vaadin-grid-body-row-hover-cell);
     }
 
-    table td[lastcolumn],
-    table th[lastcolumn] {
+    table td[lastcolumn] ::content .cell-content,
+    table th[lastcolumn] ::content .cell-content {
       /*
         Some might want to set border-right to each cell (with  --vaadin-grid-cell for example)
         to add column dividers. This rule is there to cancel the right border

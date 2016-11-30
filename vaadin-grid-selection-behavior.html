@@ -184,7 +184,7 @@
 <dom-module id="vaadin-grid-selection-theme-styles">
   <template>
     <style>
-      tbody tr[selected] td {
+      tbody tr[selected] td ::content .cell-content {
         background-color: rgb(243, 243, 243);
         @apply(--vaadin-grid-body-row-selected-cell);
       }
