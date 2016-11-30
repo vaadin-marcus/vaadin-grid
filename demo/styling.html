@@ -203,36 +203,153 @@
       </template>
     </demo-snippet>
 
-    <h3>Filtering</h3>
+    <h3>Styling 2</h3>
     <demo-snippet>
       <template>
-        <template is="dom-bind">
-          <x-array-data-source items="{{items}}"></x-array-data-source>
-          <vaadin-grid items="[[items]]">
-            <vaadin-grid-column width="50px">
-              <template class="header">#</template>
-              <template>[[index]]</template>
-            </vaadin-grid-column>
-            <vaadin-grid-column>
-              <template class="header">
-                <vaadin-grid-filter path="user.name.first">
-                  <input placeholder="First Name">
-                </vaadin-grid-filter>
-              </template>
-              <template>[[item.user.name.first]]</template>
-            </vaadin-grid-column>
-            <vaadin-grid-column>
-              <template class="header">
-                <vaadin-grid-filter path="user.name.last">
-                  <input placeholder="Last Name">
-                </vaadin-grid-filter>
-              </template>
-              <template>[[item.user.name.last]]</template>
-            </vaadin-grid-column>
-          </vaadin-grid>
-        </template>
+        <basic-styling-two></basic-styling-two>
+        <dom-module id="basic-styling-two">
+          <template>
+            <style>
+              :host {
+                display: block;
+              }
+
+              vaadin-grid {
+                font: 500 13px "Open Sans", sans-serif;
+                color: rgb(148, 154, 171);
+
+                --vaadin-grid-border: 1px solid rgb(223, 232, 239);
+
+                --vaadin-grid-cell: {
+                  padding: 0 13px;
+                }
+
+                --vaadin-grid-body-cell: {
+                  height: 65px;
+                }
+
+                --vaadin-grid-header-cell: {
+                  background: rgba(235, 238, 246, 0.9);
+                  border-bottom: 1px solid rgba(208, 217, 225, 0.9);
+                  border-top: 1px solid rgba(248, 250, 252, 0.9);
+                  min-height: 35px;
+                  border-right: 1px solid rgb(223, 232, 239);
+                }
+
+                --vaadin-grid-body-row-selected-cell: {
+                  background: rgb(131, 183, 236);
+                  color: #fff;
+                  border-bottom-color: rgb(108, 160, 218);
+                }
+
+                --vaadin-grid-body-row-odd-cell: {
+                  background-color: rgb(251, 252, 254);
+                }
+
+              }
+
+              input[type=checkbox] {
+                height: 16px;
+                width: 16px;
+              }
+
+              .image {
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                border-radius: 50%;
+                vertical-align: middle;
+                margin-right: 15px;
+              }
+
+              .header-content {
+                display: flex;
+                padding: 17px;
+                justify-content: space-between;
+              }
+
+              .buttons,
+              .search {
+                display: flex;
+              }
+
+              .buttons button,
+              .search * {
+                margin-left: 16px;
+              }
+
+              .buttons button {
+                width: 50px;
+                font-size: 20px;
+              }
+
+            </style>
+
+            <x-array-data-source items="{{items}}"></x-array-data-source>
+            <vaadin-grid id="grid" items="[[items]]" size="200">
+              <vaadin-grid-column-group>
+                <template class="header">
+                  <div class="header-content">
+                    <div class="buttons">
+                      <button class="send"></button>
+                      <button class="tablet"></button>
+                    </div>
+                    <div class="search">
+                      <div>
+                        <b>1-200 of 15,554</b><button class="dropdown">&nbsp;</button>
+                      </div>
+                      <input placeholder="Search profiles">
+                    </div>
+                  </div>
+                </template>
+
+                <vaadin-grid-column width="45px" flex="0">
+                  <template class="header">
+                    <input type="checkbox">
+                  </template>
+                  <template>
+                    <input type="checkbox" checked="{{selected::change}}">
+                  </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                  <template class="header">Name</template>
+                  <template>
+                    <div>
+                      <img class="image" src="[[item.user.picture.thumbnail]]">
+                      <span>[[item.user.name.first]]&nbsp;[[item.user.name.last]]</span>
+                    </div>
+                  </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                  <template class="header">Email</template>
+                  <template>[[item.user.email]]</template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                  <template class="header">City</template>
+                  <template>[[item.user.location.city]]</template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                  <template class="header">State</template>
+                  <template>[[item.user.location.state]]</template>
+                </vaadin-grid-column>
+              </vaadin-grid-column-group>
+
+            </vaadin-grid>
+          </template>
+          <script>
+            Polymer({
+              is: 'basic-styling-two'
+            });
+          </script>
+        </dom-module>
+
       </template>
     </demo-snippet>
+
 
   </div>
 </body>
