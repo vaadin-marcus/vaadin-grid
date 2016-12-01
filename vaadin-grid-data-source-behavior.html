@@ -17,8 +17,9 @@
 <dom-module id="vaadin-grid-data-source-theme-styles">
   <template>
     <style>
-      :host([loading]) #items tr {
+      :host([loading]) #items tr td ::content > .cell-content {
         opacity: 0.1;
+        @apply(--vaadin-grid-loading-body-cell);
       }
 
       /* Anim */
@@ -48,6 +49,7 @@
         width: 16px;
         pointer-events: none;
         opacity: 0;
+        @apply(--vaadin-grid-loading-spinner);
       }
 
       :host([loading]) #spinner  {
