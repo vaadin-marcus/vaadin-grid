@@ -52,10 +52,10 @@
                 position: relative;
                 font: 300 16px/1.55 "Open Sans", sans-serif;
                 -webkit-font-smoothing: antialiased;
-
-                --vaadin-grid-border: 1px solid #d4d4d4;
+                border-color: #d4d4d4;
 
                 --vaadin-grid-cell: {
+                  border-color: #d4d4d4 !important;
                   padding: 0 18px;
                   line-height: 38px;
                   /*min-height: 38px; Needs https://github.com/vaadin/vaadin-grid/issues/549 to be fixed */
@@ -140,7 +140,7 @@
               }
 
               vaadin-grid[loading]:before {
-                opacity: 0.8;
+                opacity: 1;
                 animation: loading-expand 1s linear;
               }
 
@@ -264,10 +264,10 @@
               vaadin-grid {
                 font: 500 13px "Open Sans", sans-serif;
                 color: rgb(148, 154, 171);
-
-                --vaadin-grid-border: 1px solid rgb(223, 232, 239);
+                border-color: rgb(223, 232, 239);
 
                 --vaadin-grid-cell: {
+                  border-color: rgb(223, 232, 239) !important;
                   padding: 0 13px;
                 }
 
@@ -441,11 +441,11 @@
                 font: 300 14px "Open Sans", sans-serif;
                 color: rgb(222, 230, 233);
                 background: transparent;
-
-                --vaadin-grid-border: none;
+                border: none;
 
                 --vaadin-grid-cell: {
                   background: rgb(80, 91, 102);
+                  border: none !important;
                 }
 
                 --vaadin-grid-body-cell: {
