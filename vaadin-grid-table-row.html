@@ -175,8 +175,18 @@
         vaadinGridTableRowBehavior
       ],
 
+      listeners: {
+        'cell-template-changed': '_cellTemplateChanged'
+      },
+
       _createCell: function() {
         return document.createElement('th', 'vaadin-grid-table-header-cell');
+      },
+
+      _cellTemplateChanged: function() {
+        this.hidden = !this.cells.filter(function(cell) {
+          return !cell._defaultTemplateStamped;
+        })[0];
       }
 
     });
@@ -188,8 +198,18 @@
         vaadinGridTableRowBehavior
       ],
 
+      listeners: {
+        'cell-template-changed': '_cellTemplateChanged'
+      },
+
       _createCell: function() {
         return document.createElement('td', 'vaadin-grid-table-footer-cell');
+      },
+
+      _cellTemplateChanged: function() {
+        this.hidden = !this.cells.filter(function(cell) {
+          return !cell._defaultTemplateStamped;
+        })[0];
       }
 
     });
