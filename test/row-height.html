@@ -242,7 +242,7 @@
           scroller.fire('iron-resize');
 
           scroller.async(function() {
-            expect(header.getBoundingClientRect().top).to.be.closeTo(scroller.getBoundingClientRect().top, 1);
+            expect(grid.$.scroller.$.header.getBoundingClientRect().top).to.be.closeTo(scroller.getBoundingClientRect().top, 1);
             done();
           }, 100);
         });
@@ -257,7 +257,7 @@
             scroller.fire('iron-resize');
 
             scroller.async(function() {
-              expect(header.getBoundingClientRect().top).to.be.closeTo(scroller.getBoundingClientRect().top, 1);
+              expect(grid.$.scroller.$.header.getBoundingClientRect().top).to.be.closeTo(scroller.getBoundingClientRect().top, 1);
               done();
             }, 100);
           });

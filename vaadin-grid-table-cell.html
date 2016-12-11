@@ -163,7 +163,9 @@
         // initializing new template instance with previously forwarded parent props.
         // could be done with observers, but this is simpler.
         for (var key in this._forwardedParentProps) {
-          this.instance[key] = this._forwardedParentProps[key];
+          if ({}.hasOwnProperty.call(this._forwardedParentProps, key)) {
+            this.instance[key] = this._forwardedParentProps[key];
+          }
         }
 
         this.style.height = '';

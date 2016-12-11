@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "no-unused-vars": 0
+  },
+  "globals": {
+    "grid": false,
+    "sinon": false,
+    "WCT": false,
+    "describe": false,
+    "it": false,
+    "expect": false,
+    "beforeEach": false,
+    "flush": false,
+    "test": false,
+    "assert": false,
+    "setup": false,
+    "suite": false,
+    "suiteSetup": false,
+    "fixture": false,
+    "getRows": false,
+    "getRowCells": false,
+    "getCellContent": false,
+    "getBodyCellContent": false,
+    "getHeaderCellContent": false,
+    "defaultCellWidth": false,
+    "getItemFromPoint": false,
+    "getScrollbarWidth": false,
+    "infiniteDataSource": false,
+    "getLastItemFromList": false,
+    "getFirstItemFromList": false,
+    "isFullOfItems": false,
+    "simulateScroll": false,
+    "scrollToEnd": false,
+    "buildDataSet": false,
+    "HTMLImports": false
+  }
+}

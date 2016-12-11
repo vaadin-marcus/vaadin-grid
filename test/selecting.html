@@ -123,7 +123,7 @@
           expect(grid._isSelected(cachedItems[1])).to.be.true;
         });
 
-        it('should change inverted selection', function () {
+        it('should change inverted selection', function() {
           expect(grid.selectedItems.inverted).to.be.false;
           var cells = getRowCells(getRows(grid.$.scroller.$.header)[0]);
           var content = getCellContent(cells[0]);
@@ -132,7 +132,7 @@
           expect(grid.selectedItems.inverted).to.be.true;
         });
 
-        it('should select an item', function () {
+        it('should select an item', function() {
           var cells = getRowCells(rows[1]);
           var content = getCellContent(cells[0]);
           var selectCheckbox = content.querySelector('*');
@@ -156,7 +156,7 @@
           expect(grid._isSelected(cachedItems[2])).to.be.true;
         });
 
-        it('should reflect the last selected item', function () {
+        it('should reflect the last selected item', function() {
           expect(grid.selectedItem).to.equal(cachedItems[0]);
           grid.selectItem(cachedItems[1]);
           expect(grid.selectedItem).to.equal(cachedItems[1]);
